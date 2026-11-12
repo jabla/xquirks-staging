@@ -1,0 +1,43 @@
+name: Device test (verify a quirk)
+description: You own the device and checked the quirk with tools/probe.py.
+title: "Verify: <vendor> <model>"
+labels: [verify]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing. Run the probe (see CONTRIBUTING.md, "Verifying a device"), tick the values in `probe-report/report.md` that match the device (its display or app, or what it does), then attach `report.md` and `diagnostics.json` below. The probe removes IEEE addresses; check the files for anything else you do not want to share.
+  - type: input
+    id: file
+    attributes:
+      label: Quirk file
+      placeholder: quirks/z2m_<vendor>_<model>.py
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Revision
+      description: The `Revision:` line at the top of the quirk file, or `revision` in the diagnostics of the xquirks integration (Settings > Devices & services > xquirks > Download diagnostics).
+      placeholder: 1a2b3c4d
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.10.3"
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Probe report and diagnostics
+      description: Drop report.md and diagnostics.json here.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything that did not match
+      description: Entity, what HA shows, what the device shows or does.

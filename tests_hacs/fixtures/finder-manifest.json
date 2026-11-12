@@ -1,0 +1,78 @@
+{
+ "acme_ex_1": {
+  "category": "new",
+  "claimed_elsewhere": [],
+  "description": "Exact names",
+  "file": "quirks/z2m_acme_ex_1.py",
+  "fingerprints": [["Acme", "EX-1"], ["Acme Inc", "EX-1"], ["Acme", "MO-2"]],
+  "left_out": 2,
+  "left_out_lines": ["power_on_behavior: z2m's own code, not generated", "child_lock: no ZHA entity type, not generated yet"],
+  "model": "EX-1",
+  "path": "zcl",
+  "revision": "0123abcd",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "sources": {"zha-device-handlers": "2.4.1", "zigbee-herdsman-converters": "26.123.0"},
+  "status": "generated",
+  "vendor": "Acme"
+ },
+ "alias_vendor_al_3": {
+  "category": "missing name",
+  "claimed_elsewhere": [],
+  "file": "quirks/z2m_alias_vendor_al_3.py",
+  "fingerprints": [["_TZE200_alias000", "TS0601"]],
+  "left_out": 0,
+  "left_out_lines": [],
+  "model": "AL-3",
+  "path": "alias",
+  "revision": "4567cdef",
+  "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "status": "generated",
+  "target": ["Vendor", "AL-3"],
+  "vendor": "Vendor"
+ },
+ "nobuilt_nb_5": {
+  "category": "new",
+  "file": null,
+  "fingerprints": [[null, "NB-5"]],
+  "model": "NB-5",
+  "not_built": "endpoint unclear",
+  "path": "zcl",
+  "status": "generated",
+  "vendor": "Nobuilt"
+ },
+ "nofile_nf_4": {
+  "category": "unknown",
+  "file": null,
+  "fingerprints": [["Nofile Co", "NF-4"]],
+  "status": "upstream"
+ },
+ "other_co_mo_2": {
+  "category": "new",
+  "claimed_elsewhere": [],
+  "file": "quirks/z2m_other_co_mo_2.py",
+  "fingerprints": [["Other Co", "MO-2"]],
+  "left_out": 0,
+  "left_out_lines": [],
+  "model": "MO-2 Pro",
+  "path": "zcl",
+  "revision": "89ab0123",
+  "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "status": "verified",
+  "vendor": "Other"
+ },
+ "tuya_mo_2": {
+  "category": "new",
+  "claimed_elsewhere": [["Other Co", "MO-2"]],
+  "file": "quirks/z2m_tuya_mo_2.py",
+  "fingerprints": [[null, "MO-2"]],
+  "left_out": 1,
+  "left_out_lines": ["DP 101 (fault): z2m's own code, not generated"],
+  "model": "MO-2",
+  "path": "tuya",
+  "revision": "cdef4567",
+  "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "status": "generated",
+  "upstream_open_prs": [{"author": "someone", "number": 4242, "title": "Add MO-2", "url": "https://github.com/zigpy/zha-device-handlers/pull/4242"}],
+  "vendor": "Tuya"
+ }
+}

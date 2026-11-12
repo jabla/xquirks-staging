@@ -1,0 +1,620 @@
+:root {
+  color-scheme: light dark;
+  --bg: #fbfbfa;
+  --fg: #1c1e21;
+  --muted: #555c64;
+  --surface: #f1f2f4;
+  --border: #cfd3d8;
+  --accent: #0b5cad;
+  --accent-fg: #ffffff;
+  --focus: #0b5cad;
+  --drop: #e6effa;
+  --generated-bg: #fdf0cf;
+  --generated-fg: #5f4300;
+  --verified-bg: #d7f2df;
+  --verified-fg: #135428;
+  --none-bg: #e7e9ec;
+  --none-fg: #3d434a;
+  --problem-bg: #fde3e1;
+  --problem-fg: #7a1712;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --fg: #e5e7ea;
+    --muted: #a3aab2;
+    --surface: #1f2226;
+    --border: #3b4047;
+    --accent: #79b8ff;
+    --accent-fg: #0b1a2b;
+    --focus: #79b8ff;
+    --drop: #1b2a3b;
+    --generated-bg: #4b3700;
+    --generated-fg: #ffe1a0;
+    --verified-bg: #10402a;
+    --verified-fg: #b3efc6;
+    --none-bg: #2c3036;
+    --none-fg: #cfd4da;
+    --problem-bg: #4d1714;
+    --problem-fg: #ffd2cd;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* The phone table sets display on rows: hidden has to win over it. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 64rem;
+  padding: 1rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: 1rem/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+a {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+h1 {
+  margin: 0.5rem 0;
+  font-size: 1.75rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+h2 {
+  margin-top: 2rem;
+  font-size: 1.35rem;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+code,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+pre {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-wrap: normal;
+}
+
+button {
+  font: inherit;
+  padding: 0.45rem 1rem;
+  color: var(--accent-fg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+input[type="search"],
+select,
+textarea {
+  display: block;
+  width: 100%;
+  margin: 0.25rem 0 0.5rem;
+  padding: 0.5rem;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.skip {
+  position: absolute;
+  left: -100vw;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip:focus {
+  left: 1rem;
+  top: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg);
+}
+
+.tagline {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.problem {
+  padding: 0.5rem 0.75rem;
+  color: var(--problem-fg);
+  background: var(--problem-bg);
+  border-radius: 4px;
+}
+
+.drop {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+}
+
+.drop label {
+  display: block;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.drop:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.drop.over,
+.drop:hover {
+  background: var(--drop);
+  border-color: var(--accent);
+}
+
+.drop-title {
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.drop-hint {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.drop-local {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+details {
+  margin: 1rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+details label {
+  font-weight: 600;
+}
+
+.template button {
+  margin-bottom: 0.5rem;
+}
+
+/* Empty, it takes no space but stays a live region screen readers follow. */
+#status:empty {
+  margin: 0;
+}
+
+#status.quiet {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* Spaces in names count ("AOYAN " is a name of its own): keep them visible. */
+.names li,
+td.fingerprints span {
+  white-space: pre-wrap;
+}
+
+.device {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.device > .picture.none {
+  visibility: hidden;
+}
+
+.device .what {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+}
+
+.device .zigbee {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.device .zigbee code {
+  white-space: pre-wrap;
+}
+
+/* Device pictures: a white square in both themes, the pictures are photos on white. */
+.picture {
+  display: block;
+  aspect-ratio: 1;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.picture.none {
+  background: var(--surface);
+}
+
+details.more {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.9rem;
+}
+
+details.more summary {
+  font-weight: normal;
+  color: var(--muted);
+}
+
+details.more ul {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.device ul {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
+
+.device li + li {
+  margin-top: 0.25rem;
+}
+
+.revision {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.note {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.reports {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.9rem;
+}
+
+.prs {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.prs p {
+  margin: 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: var(--none-fg);
+  background: var(--none-bg);
+}
+
+.badge.generated {
+  color: var(--generated-fg);
+  background: var(--generated-bg);
+}
+
+.badge.verified {
+  color: var(--verified-fg);
+  background: var(--verified-bg);
+}
+
+.names {
+  padding-left: 1.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.875rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 14rem;
+  gap: 0 1rem;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.col-picture {
+  width: 4.5rem;
+}
+
+.col-device {
+  width: 22%;
+}
+
+.col-fingerprints {
+  width: 26%;
+}
+
+.col-status {
+  width: 6.5rem;
+}
+
+.col-prs {
+  width: 7.5rem;
+}
+
+td.picture-cell .picture {
+  width: 3.5rem;
+}
+
+td.device-cell strong,
+td.device-cell .what,
+td.device-cell .z2m {
+  display: block;
+}
+
+td.device-cell .what {
+  color: var(--muted);
+}
+
+td.device-cell .z2m {
+  font-size: 0.85rem;
+}
+
+td.file-cell a {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+th,
+td {
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  border-bottom: 2px solid var(--border);
+}
+
+td.fingerprints {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+td.fingerprints span {
+  display: block;
+}
+
+td.fingerprints .except {
+  color: var(--muted);
+}
+
+td .prlist a {
+  margin-right: 0.4rem;
+  white-space: nowrap;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin: 1rem 0;
+}
+
+.pager button {
+  color: var(--accent);
+  background: transparent;
+  border-color: var(--border);
+}
+
+.pager select {
+  display: inline-block;
+  width: auto;
+  margin: 0 0.25rem;
+}
+
+footer {
+  margin-top: 3rem;
+  padding-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Phones: every table row becomes a card, each cell with its column name. */
+@media (max-width: 44rem) {
+  .filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The picture beside the name, the files and pull requests below both at full width. */
+  .device {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 0 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .device > .picture {
+    grid-row: span 3;
+  }
+
+  .device .body {
+    display: contents;
+  }
+
+  .device .body > ul,
+  .device .body > .prs {
+    grid-column: 1 / -1;
+  }
+
+  .device .zigbee {
+    margin-bottom: 0.25rem;
+  }
+
+  thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  table,
+  tbody,
+  tr,
+  td {
+    display: block;
+  }
+
+  tr {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    column-gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid var(--border);
+  }
+
+  td.picture-cell {
+    padding: 0.15rem 0;
+  }
+
+  /* The picture beside the device, the other cells below both at full width. */
+  td:not(.picture-cell, .device-cell) {
+    grid-column: 1 / -1;
+  }
+
+  td.device-cell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  td.device-cell::before {
+    content: none;
+  }
+
+  td.picture-cell .picture {
+    width: 4.5rem;
+  }
+
+  td {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.15rem 0;
+    border: 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  td.picture-cell::before {
+    content: none;
+  }
+
+  td:empty {
+    display: none;
+  }
+}

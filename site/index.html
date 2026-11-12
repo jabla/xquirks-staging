@@ -1,0 +1,159 @@
+<!doctype html>
+<!-- data-repo: the GitHub owner/name of this repo, the only place the page names it. -->
+<html lang="en" data-repo="jabla/xquirks">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Scripts only from this site. Besides its own files the page requests only the device list from
+     this repo's content branch on raw.githubusercontent.com and device pictures from zigbee2mqtt.io
+     (plain GETs by path): it cannot send your file anywhere. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; connect-src https://raw.githubusercontent.com https://www.zigbee2mqtt.io; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Extra quirks for ZHA, Home Assistant's Zigbee integration. Device paired, but features missing? Find its quirk here.">
+<!-- Link previews (forums, chats): absolute URLs of the published page, checked by tests_hacs/test_finder.py. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="xquirks">
+<meta property="og:title" content="xquirks finder">
+<meta property="og:description" content="Extra quirks for ZHA, Home Assistant's Zigbee integration. Device paired, but features missing? Find its quirk here.">
+<meta property="og:url" content="https://jabla.github.io/xquirks/">
+<meta property="og:image" content="https://jabla.github.io/xquirks/social.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="xquirks finder: extra quirks for ZHA, Home Assistant's Zigbee integration">
+<meta name="twitter:card" content="summary_large_image">
+<title>xquirks finder</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='40 40 176 176' width='176' height='176'%3E%3Cdefs%3E%3CclipPath id='left'%3E%3Crect x='40' y='56' width='112' height='112' rx='28'/%3E%3C/clipPath%3E%3C/defs%3E%3Crect x='40' y='56' width='112' height='112' rx='28' fill='%23FDBE36'/%3E%3Crect x='104' y='88' width='112' height='112' rx='28' fill='%23EC0444'/%3E%3Crect x='104' y='88' width='112' height='112' rx='28' fill='%23F97A42' clip-path='url(%23left)'/%3E%3Cpath d='M116 108l24 40M140 108l-24 40' stroke='%23FFFFFF' stroke-width='13' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<a class="skip" href="#devices-heading">Skip to the finder</a>
+<header>
+  <div class="brand">
+    <!-- brand/icon.svg -->
+    <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="40 40 176 176" aria-hidden="true" focusable="false">
+      <defs><clipPath id="logo-left"><rect x="40" y="56" width="112" height="112" rx="28"/></clipPath></defs>
+      <rect x="40" y="56" width="112" height="112" rx="28" fill="#FDBE36"/>
+      <rect x="104" y="88" width="112" height="112" rx="28" fill="#EC0444"/>
+      <rect x="104" y="88" width="112" height="112" rx="28" fill="#F97A42" clip-path="url(#logo-left)"/>
+      <path d="M116 108l24 40M140 108l-24 40" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round"/>
+    </svg>
+    <h1>xquirks finder</h1>
+  </div>
+  <p class="tagline">Extra quirks for ZHA, Home Assistant's Zigbee integration.</p>
+  <p>Device paired, but features missing? Find its quirk here, or let the <a data-repo-link="#install-from-the-marketplace" href="#">xquirks integration</a> find it for you. The quirks are generated from Zigbee2MQTT's device data. <a data-repo-link="" href="#">About xquirks</a></p>
+</header>
+<noscript><p class="problem">This page needs JavaScript. Without it, the xquirks integration (installed from the Marketplace) finds the files for your devices.</p></noscript>
+<main>
+  <section aria-labelledby="devices-heading">
+    <h2 id="devices-heading" tabindex="-1">Your devices</h2>
+    <div class="drop" id="drop">
+      <label for="file">
+        <span class="drop-title">Drop ZHA diagnostics here or pick a file</span>
+        <span class="drop-hint">In Home Assistant: Settings &gt; Devices &amp; services &gt; Zigbee Home Automation &gt; Download diagnostics, or a single device's diagnostics (the device's page &gt; Download diagnostics).</span>
+        <span class="drop-local">Runs locally in your browser: nothing gets uploaded.</span>
+      </label>
+      <input type="file" id="file" accept=".json,application/json" multiple disabled>
+    </div>
+    <details id="template-box">
+      <summary>No diagnostics file? Ask Home Assistant with a template</summary>
+      <ol>
+        <li>In Home Assistant open Developer tools &gt; Template (needs an admin user).</li>
+        <li>Replace the template on the left with this one:
+          <div class="template">
+            <pre id="template" tabindex="0" aria-label="Template"></pre>
+            <button type="button" id="copy-template">Copy template</button>
+          </div>
+        </li>
+        <li>Copy the result on the right (a list of names) and paste it here.</li>
+      </ol>
+      <label for="paste">Template result or diagnostics JSON</label>
+      <textarea id="paste" rows="6" spellcheck="false" autocomplete="off" placeholder='["_TZE200_abcdefgh||TS0601", ...]'></textarea>
+      <button type="button" id="paste-go" disabled>Find files</button>
+    </details>
+    <p id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section id="results" aria-labelledby="results-heading" hidden>
+    <h2 id="results-heading" tabindex="-1">Files for your devices</h2>
+    <p id="summary"></p>
+    <div id="matched"></div>
+    <div id="install" hidden>
+      <h3>Install</h3>
+      <p><strong>With the xquirks integration</strong> you need no download: it offers each of these files under Settings &gt; System &gt; Repairs and installs it once you confirm. <a data-repo-link="#install-from-the-marketplace" href="#">Install from the Marketplace</a></p>
+      <p><strong>By hand:</strong> <span data-ha-needs="">needs the Home Assistant release the files were built for, or newer</span>.</p>
+      <ol>
+        <li>Download each file above from its GitHub page ("Download raw file").</li>
+        <li>Copy only these files (never the whole repo) into your custom quirks folder, for example <code>/config/custom_zha_quirks/</code>. On HA OS the File editor, Samba or SSH app can do that. ZHA loads every file in the folder and each file claims every device with its Zigbee fingerprint.</li>
+        <li>Point ZHA at the folder in <code>configuration.yaml</code>:
+          <pre class="code">zha:
+  custom_quirks_path: /config/custom_zha_quirks/</pre>
+        </li>
+        <li>Restart Home Assistant.</li>
+      </ol>
+      <p>When zha-device-handlers gains a quirk for one of these devices, the quirk that ships with ZHA takes over and the file steps aside on its own. You can delete the file then. To remove a file: delete it, restart Home Assistant and remove the entities the device no longer has. The xquirks integration can take over files you copied by hand.</p>
+      <p>ZHA logs "Loaded custom quirks. Please contribute them to zha-device-handlers" for every custom quirk. For these files please <a data-repo-link="issues" href="#">report problems in this repo</a> instead, or test an open upstream pull request for your device and report there.</p>
+    </div>
+    <div id="unmatched" hidden>
+      <h3>No file here</h3>
+      <p>This repo has no file for these devices. That does not mean ZHA lacks support: most devices work with ZHA itself or with a quirk that ships with it. If Zigbee2MQTT supports one of them and ZHA does not, report it.</p>
+      <ul id="unmatched-list" class="names"></ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="all-heading">
+    <h2 id="all-heading">All devices</h2>
+    <div class="filters">
+      <div>
+        <label for="search">Search by vendor, model, description or manufacturer name</label>
+        <input type="search" id="search" autocomplete="off" spellcheck="false" disabled>
+      </div>
+      <div>
+        <label for="show">Show</label>
+        <select id="show" disabled>
+          <option value="all">All devices</option>
+          <option value="file">With a file</option>
+          <option value="verified">Verified on a device</option>
+          <option value="prs">With an open upstream PR</option>
+          <option value="nofile">Without a file</option>
+        </select>
+      </div>
+    </div>
+    <p id="count" aria-live="polite">Loading the device list...</p>
+    <table id="all" role="table">
+      <colgroup>
+        <col class="col-picture">
+        <col class="col-device">
+        <col class="col-fingerprints">
+        <col class="col-status">
+        <col class="col-file">
+        <col class="col-prs">
+      </colgroup>
+      <thead role="rowgroup">
+        <tr role="row">
+          <th scope="col" role="columnheader"><span class="visually-hidden">Picture</span></th>
+          <th scope="col" role="columnheader">Device</th>
+          <th scope="col" role="columnheader">Fingerprints (manufacturer / model)</th>
+          <th scope="col" role="columnheader">Status</th>
+          <th scope="col" role="columnheader">File</th>
+          <th scope="col" role="columnheader">Open upstream PRs</th>
+        </tr>
+      </thead>
+      <tbody id="all-rows" role="rowgroup"></tbody>
+    </table>
+    <nav class="pager" id="pager" aria-label="Pages of the device list" hidden>
+      <button type="button" id="prev">Previous</button>
+      <span><label for="page">Page</label> <select id="page"></select> <span id="pages"></span></span>
+      <button type="button" id="next">Next</button>
+    </nav>
+  </section>
+</main>
+<footer>
+  <p id="sources"></p>
+  <p>Status <span class="badge generated">generated</span>: built from the Zigbee2MQTT definition and tested against the output of Zigbee2MQTT's own converters, not yet checked on a real device. <span class="badge verified">verified</span>: someone ran the probe on the device and the quirk matched.</p>
+  <p>Device pictures and device pages come from <a href="https://www.zigbee2mqtt.io/supported-devices/">zigbee2mqtt.io</a>.</p>
+  <p><a data-repo-link="" href="#">Source, README and issues on GitHub</a></p>
+</footer>
+</body>
+</html>

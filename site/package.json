@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "description": "Lets node load the page's modules as ES modules (the finder tests).",
+  "type": "module"
+}

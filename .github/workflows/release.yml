@@ -1,0 +1,85 @@
+name: Release
+
+# A tag vX.Y.Z on a main commit (or a manual run naming one) releases the HACS zip: the integration
+# code (hacs.json: zip_release), the version in its manifest.json being the tag without the v. The
+# quirk files are not in it: the integration takes them from the content-<n> tags. The tests do not
+# run again: the tagged commit must have passed CI in a push run on main, which no pull request or
+# fork can create. The zip is built from that commit with the standard library only. The release is
+# created as a draft with the zip attached and published after that, so HACS never sees a release
+# without its zip; a rerun finishes a draft that is already there.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to release (vX.Y.Z)
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    name: Release with the zip
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      # the CI runs of the tagged commit
+      actions: read
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: The tag is vX.Y.Z
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::tag $TAG is not vX.Y.Z"
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: The tagged commit is on main and passed CI there
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          if ! git merge-base --is-ancestor "$sha" origin/main; then
+            echo "::error::$TAG ($sha) is not on main"
+            exit 1
+          fi
+          runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --event push --commit "$sha" --status success --json databaseId --jq length)
+          if [ "$runs" = 0 ]; then
+            echo "::error::CI has not passed on main for $sha: rerun its failed jobs, then rerun the release"
+            exit 1
+          fi
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Build the zip
+        run: python tools/build_integration.py --version "${TAG#v}" --zip dist
+      - name: Draft with the zip, then publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          draft=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null || true)
+          if [ "$draft" = true ]; then
+            gh release upload "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --clobber
+          elif [ "$draft" = false ]; then
+            echo "::error::release $TAG is published already"
+            exit 1
+          else
+            gh release create "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --verify-tag --draft --title "$TAG" --generate-notes
+          fi
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false

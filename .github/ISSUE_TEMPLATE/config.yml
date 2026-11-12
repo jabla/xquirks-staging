@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A device that ZHA supports without a file from this repo
+    url: https://github.com/zigpy/zha-device-handlers/issues
+    about: Missing or wrong values in a quirk that ships with ZHA belong to zha-device-handlers.

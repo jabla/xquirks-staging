@@ -1,0 +1,327 @@
+{
+ "alias_moes_zc_hm": {
+  "category": "missing name",
+  "claimed_elsewhere": [],
+  "description": "Carbon monoxide alarm",
+  "file": "quirks/z2m_alias_moes_zc_hm.py",
+  "fingerprints": [
+   [
+    "JM720ES-EF-3.0",
+    "TS0601"
+   ]
+  ],
+  "left_out": 0,
+  "left_out_gaps": 0,
+  "left_out_unknown": 0,
+  "model": "ZC-HM",
+  "path": "alias",
+  "picture": "ZC-HM.png",
+  "picture_sha256": "23c5b3e8c6f3e76d12835ab07895926255712fb0f2dc74120657c3abdd92785e",
+  "revision": "3bd997a2",
+  "sha256": "5a0f2b9d29e5d71ce63e558e237283a8989ae5351b507f815935737e2bbc1c2a",
+  "sources": {
+   "zha-device-handlers": "dev 1d6598c32a8b4f054438f63f08fc36ff3d6b4930",
+   "zigbee-herdsman-converters": "26.123.0"
+  },
+  "status": "generated",
+  "target": [
+   "_TZE200_hr0tdd47",
+   "TS0601"
+  ],
+  "upstream_pr": null,
+  "vendor": "Moes"
+ },
+ "alias_neo_nas_wv03b": {
+  "aliases": [
+   {
+    "fingerprints": [
+     [
+      "_TZE284_rzrrjkz2",
+      "TS0601"
+     ],
+     [
+      "_TZE284_uab532m0",
+      "TS0601"
+     ],
+     [
+      "_TZE204_nnhwcvbk",
+      "TS0601"
+     ],
+     [
+      "_TZE284_nnhwcvbk",
+      "TS0601"
+     ],
+     [
+      "_TZE204_4fblxpma",
+      "TS0601"
+     ],
+     [
+      "_TZE284_4fblxpma",
+      "TS0601"
+     ]
+    ],
+    "targets": [
+     [
+      "_TZE204_rzrrjkz2",
+      "TS0601"
+     ]
+    ]
+   },
+   {
+    "fingerprints": [
+     [
+      "_TZE284_z7a2jmyy",
+      "TS0601"
+     ]
+    ],
+    "targets": [
+     [
+      "_TZE204_z7a2jmyy",
+      "TS0601"
+     ]
+    ]
+   }
+  ],
+  "category": "missing name",
+  "claimed_elsewhere": [],
+  "description": "Smart sprinkler timer with measurements",
+  "differs": [
+   {
+    "dp": 3,
+    "reason": "enum: ZHA has no member for wire 3 (z2m on_manual_app), wire 4 (z2m on_manual_button)"
+   },
+   {
+    "dp": 9,
+    "reason": "scale: ZHA shows 16.6667 x z2m's value (wire 3600: z2m 3.6, ZHA 60)"
+   },
+   {
+    "dp": 9,
+    "reason": "scale: ZHA shows 4.40287 x z2m's value (wire 3600: z2m 3.6, ZHA 15.8503)"
+   },
+   {
+    "dp": 15,
+    "reason": "scale: ZHA shows 1000 x z2m's value (wire 3600: z2m 3.6, ZHA 3600)"
+   },
+   {
+    "dp": 15,
+    "reason": "scale: ZHA shows 264.172 x z2m's value (wire 3600: z2m 3.6, ZHA 951.019)"
+   },
+   {
+    "dp": 102,
+    "reason": "unit: the same number, z2m in gal, ZHA in L"
+   },
+   {
+    "dp": 108,
+    "reason": "unit: the same number, z2m in gal, ZHA in L"
+   }
+  ],
+  "file": "quirks/z2m_alias_neo_nas_wv03b.py",
+  "fingerprints": [
+   [
+    "_TZE284_rzrrjkz2",
+    "TS0601"
+   ],
+   [
+    "_TZE284_uab532m0",
+    "TS0601"
+   ],
+   [
+    "_TZE204_nnhwcvbk",
+    "TS0601"
+   ],
+   [
+    "_TZE284_nnhwcvbk",
+    "TS0601"
+   ],
+   [
+    "_TZE204_4fblxpma",
+    "TS0601"
+   ],
+   [
+    "_TZE284_4fblxpma",
+    "TS0601"
+   ],
+   [
+    "_TZE284_z7a2jmyy",
+    "TS0601"
+   ]
+  ],
+  "left_out": 0,
+  "left_out_gaps": 0,
+  "left_out_unknown": 0,
+  "model": "NAS-WV03B",
+  "path": "alias",
+  "picture": "NAS-WV03B.png",
+  "picture_sha256": "e7c84895f020e6ddd03fe8e91274c5a6f6496206fcfff27c3723a6d3d3ac89a0",
+  "revision": "173455d5",
+  "sha256": "6713527c8a6544c0dad238cdc6281be4828270eed2fe46edf4ad9a85b3c79519",
+  "sources": {
+   "zha-device-handlers": "dev 1d6598c32a8b4f054438f63f08fc36ff3d6b4930",
+   "zigbee-herdsman-converters": "26.123.0"
+  },
+  "status": "generated",
+  "target": [
+   "_TZE204_rzrrjkz2",
+   "TS0601"
+  ],
+  "upstream_open_prs": [
+   {
+    "author": "gitolicious",
+    "number": 5468,
+    "title": "Add Nous L14 smart water valve _TZE284_nnhwcvbk (#4308)",
+    "url": "https://github.com/zigpy/zha-device-handlers/pull/5468"
+   }
+  ],
+  "upstream_pr": null,
+  "vendor": "NEO"
+ },
+ "aqara_qbcz15lm": {
+  "category": "new",
+  "claimed_elsewhere": [],
+  "description": "Smart wall outlet H1 (USB)",
+  "endpoints": {
+   "1": [
+    64704
+   ]
+  },
+  "file": "quirks/z2m_aqara_qbcz15lm.py",
+  "fingerprints": [
+   [
+    null,
+    "lumi.plug.sacn03"
+   ]
+  ],
+  "left_out": 2,
+  "left_out_gaps": 2,
+  "left_out_unknown": 2,
+  "model": "QBCZ15LM",
+  "path": "zcl",
+  "picture": "QBCZ15LM.png",
+  "picture_sha256": "d023de29f603ecafdcafe8e981324e1366289eb53a810c8bf1041110cf60bb2c",
+  "revision": "af195132",
+  "sha256": "23fae05977c3588e15ad8281c08bf0756c37bdd282438b98ed35612d80db5f1e",
+  "sources": {
+   "zha-device-handlers": "2.4.1",
+   "zigbee-herdsman-converters": "26.123.0"
+  },
+  "status": "generated",
+  "upstream_pr": null,
+  "vendor": "Aqara"
+ },
+ "bosch_bsen_w": {
+  "category": "new",
+  "claimed_elsewhere": [],
+  "description": "Water alarm (formerly known as BWA-1)",
+  "endpoints": {
+   "1": [
+    64684
+   ]
+  },
+  "file": "quirks/z2m_bosch_bsen_w.py",
+  "fingerprints": [
+   [
+    null,
+    "RBSH-WS-ZB-EU"
+   ]
+  ],
+  "left_out": 1,
+  "left_out_gaps": 1,
+  "left_out_unknown": 0,
+  "model": "BSEN-W",
+  "path": "zcl",
+  "picture": "BSEN-W.png",
+  "picture_sha256": "7a8025d9f90da7ec234608d8741f7ac9fcf3e263911d5c2b1a1311eb95ac1e8a",
+  "revision": "19ebf496",
+  "sha256": "0afa3ac8d0363ac155bd7b978ffc49f9337fe36d10e52458dc66034ff79a3584",
+  "sources": {
+   "zha-device-handlers": "2.4.1",
+   "zigbee-herdsman-converters": "26.123.0"
+  },
+  "status": "generated",
+  "upstream_pr": null,
+  "vendor": "Bosch"
+ },
+ "moes_zm6lt1": {
+  "category": "new",
+  "claimed_elsewhere": [],
+  "description": "Smart 1-phase energy power meter with CT sensor clamp",
+  "endpoints": {
+   "1": [
+    61184
+   ]
+  },
+  "file": "quirks/z2m_moes_zm6lt1.py",
+  "fingerprints": [
+   [
+    "_TZE284_2fnssffc",
+    "TS0601"
+   ]
+  ],
+  "left_out": 1,
+  "left_out_gaps": 0,
+  "left_out_unknown": 0,
+  "model": "ZM6LT1",
+  "path": "tuya",
+  "picture": "ZM6LT1.png",
+  "picture_sha256": "32dfe2a47b2cc4b3b373dbc0ba6069fd99880123143b36b5ac75996943f7a9b9",
+  "revision": "70878f1a",
+  "sha256": "210dcbdfd412460c3ba008fd9c6ee57aa03aa2f0db5c02004081029f1abf97f0",
+  "sources": {
+   "zha-device-handlers": "2.4.1",
+   "zigbee-herdsman-converters": "26.123.0"
+  },
+  "status": "generated",
+  "upstream_open_prs": [
+   {
+    "author": "gilbertorconde",
+    "number": 5181,
+    "title": "Add support for Moes ZM6LT1 1-phase energy meter (_TZE284_2fnssffc)",
+    "url": "https://github.com/zigpy/zha-device-handlers/pull/5181"
+   }
+  ],
+  "upstream_pr": null,
+  "vendor": "Moes"
+ },
+ "tuya_ts0105": {
+  "category": "new",
+  "claimed_elsewhere": [
+   [
+    "_TZE600_ogyg1y6b",
+    "TS0105"
+   ]
+  ],
+  "description": "3 gang switch",
+  "endpoints": {
+   "1": [
+    61184
+   ]
+  },
+  "file": "quirks/z2m_tuya_ts0105.py",
+  "fingerprints": [
+   [
+    null,
+    "TS0105"
+   ],
+   [
+    "Tuya",
+    "TS0105"
+   ]
+  ],
+  "left_out": 0,
+  "left_out_gaps": 0,
+  "left_out_unknown": 0,
+  "model": "TS0105",
+  "path": "tuya",
+  "picture": "TS0105.png",
+  "picture_sha256": "8112848b787c2f9cb0090599c012c42a76a1bb68bc6f7ec148a494a206514833",
+  "revision": "0224a715",
+  "sha256": "803335c69b7d54a3ddabee4c28fbc60b84492bb478ff058aa0c3fbdc4e5a1b4a",
+  "sources": {
+   "zha-device-handlers": "2.4.1",
+   "zigbee-herdsman-converters": "26.123.0"
+  },
+  "status": "generated",
+  "upstream_pr": null,
+  "vendor": "Tuya"
+ }
+}

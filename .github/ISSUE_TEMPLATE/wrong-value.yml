@@ -1,0 +1,40 @@
+name: Wrong or missing value
+description: A quirk file from this repo shows a wrong value, misses an entity or a setting does not stick.
+title: "<vendor> <model>: "
+labels: [bug]
+body:
+  - type: input
+    id: file
+    attributes:
+      label: Quirk file
+      placeholder: quirks/z2m_<vendor>_<model>.py
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Revision
+      description: The `Revision:` line at the top of the quirk file, or `revision` in the diagnostics of the xquirks integration (Settings > Devices & services > xquirks > Download diagnostics).
+      placeholder: 1a2b3c4d
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home Assistant version
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: The entity, what HA shows, what the device shows or does. For a setting, the value you set and what it went back to.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Device diagnostics
+      description: Settings > Devices & services > the device > Download diagnostics. Drop the file here. Better still, a probe report (CONTRIBUTING.md).
+    validations:
+      required: true
