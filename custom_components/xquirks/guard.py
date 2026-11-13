@@ -183,7 +183,7 @@ FILTER = "no_builtin_quirk"
 # binds each of them, so the filter cannot raise NameError inside ZHA's device lookup.
 FILTER_NEEDS = frozenset({
     "functools", "logging", "pathlib", "zhaquirks", "DEVICE_REGISTRY", "DeviceMatch", "_LOGGER", "_SHIPPED", "_STEPPED_BACK",
-    "FINGERPRINTS", "CLAIMED_ELSEWHERE", "ENDPOINTS", "_is_shipped", "_shipped_quirk", "_misfit", FILTER,
+    "FINGERPRINTS", "CLAIMED_ELSEWHERE", "ENDPOINTS", "_is_shipped", "_shipped_quirk", "_misfit", "_upstream_first", FILTER,
 })
 # The fingerprints a builder takes when it starts its chain (gen_zcl: QuirkBuilder(manufacturer, model)).
 ROOT_ARGS = {"QuirkBuilder": 2, "TuyaQuirkBuilder": 0}

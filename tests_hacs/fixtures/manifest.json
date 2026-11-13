@@ -198,8 +198,8 @@
   "path": "zcl",
   "picture": "QBCZ15LM.png",
   "picture_sha256": "d023de29f603ecafdcafe8e981324e1366289eb53a810c8bf1041110cf60bb2c",
-  "revision": "af195132",
-  "sha256": "23fae05977c3588e15ad8281c08bf0756c37bdd282438b98ed35612d80db5f1e",
+  "revision": "fd15d1ee",
+  "sha256": "8949aa5dd87ca88a44fb764295572ee80326edbf68a98db419dd303cafd17134",
   "sources": {
    "zha-device-handlers": "2.4.1",
    "zigbee-herdsman-converters": "26.123.0"
@@ -231,8 +231,8 @@
   "path": "zcl",
   "picture": "BSEN-W.png",
   "picture_sha256": "7a8025d9f90da7ec234608d8741f7ac9fcf3e263911d5c2b1a1311eb95ac1e8a",
-  "revision": "19ebf496",
-  "sha256": "0afa3ac8d0363ac155bd7b978ffc49f9337fe36d10e52458dc66034ff79a3584",
+  "revision": "c1d16c6f",
+  "sha256": "d757acd8bda676e543d23d0e0965bdd46823c149e6dc4b9c91e8b08bd6d17513",
   "sources": {
    "zha-device-handlers": "2.4.1",
    "zigbee-herdsman-converters": "26.123.0"
@@ -264,8 +264,8 @@
   "path": "tuya",
   "picture": "ZM6LT1.png",
   "picture_sha256": "32dfe2a47b2cc4b3b373dbc0ba6069fd99880123143b36b5ac75996943f7a9b9",
-  "revision": "70878f1a",
-  "sha256": "210dcbdfd412460c3ba008fd9c6ee57aa03aa2f0db5c02004081029f1abf97f0",
+  "revision": "38fbbf4e",
+  "sha256": "43afdba48b8138b6403fcaa519108abea251aedebcf0e8ebe6915cd56ebdb5b7",
   "sources": {
    "zha-device-handlers": "2.4.1",
    "zigbee-herdsman-converters": "26.123.0"
@@ -314,8 +314,8 @@
   "path": "tuya",
   "picture": "TS0105.png",
   "picture_sha256": "8112848b787c2f9cb0090599c012c42a76a1bb68bc6f7ec148a494a206514833",
-  "revision": "0224a715",
-  "sha256": "803335c69b7d54a3ddabee4c28fbc60b84492bb478ff058aa0c3fbdc4e5a1b4a",
+  "revision": "0f79a69a",
+  "sha256": "71949dddf1bc45ab658ed6e68f05302f36bbe08de25b3665b0fc728472a0a7c6",
   "sources": {
    "zha-device-handlers": "2.4.1",
    "zigbee-herdsman-converters": "26.123.0"
