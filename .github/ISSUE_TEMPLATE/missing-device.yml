@@ -1,5 +1,5 @@
 name: Device without a file
-description: Zigbee2MQTT supports your device, ZHA does not. This repo has no file for it.
+description: ZHA does not support your device fully. This repo has no file for it.
 title: "Missing: <vendor> <model>"
 labels: [device]
 body:
@@ -8,7 +8,13 @@ body:
       value: |
         Check the [xquirks finder](https://jabla.github.io/xquirks/) first: your device may already have a file.
 
-        Files are generated from the Zigbee2MQTT data, not written by hand. Some devices are left out for now (climate, cover, light and lock devices; features built from Zigbee2MQTT's own code). The answer may be that this one cannot be translated yet.
+        Some devices are left out for now:
+
+        - lights, locks and fans
+        - some covers and thermostats
+        - features that Zigbee2MQTT builds in its own code
+
+        The answer may be that this one cannot be translated yet.
   - type: input
     id: z2m
     attributes:
@@ -27,4 +33,4 @@ body:
     id: diagnostics
     attributes:
       label: Device diagnostics
-      description: Settings > Devices & services > the device > Download diagnostics. Drop the file here.
+      description: The device's page > three-dot menu > Download diagnostics. Drop the file here.

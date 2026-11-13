@@ -16,7 +16,7 @@ from .const import REPOSITORY
 from .plan import Device, Lost, Misfit, Plan
 
 UPSTREAM_PR = "https://github.com/zigpy/zha-device-handlers/pull/{number}"
-# A new issue in this collection's repository through its "Device layout" form
+# A new issue in the xquirks repository through its "Device layout" form
 # (.github/ISSUE_TEMPLATE/device-layout.yml): GitHub fills the form's fields from the query by their ids.
 REPORT = f"https://github.com/{REPOSITORY}/issues/new"
 REPORT_FORM = "device-layout.yml"
@@ -25,21 +25,21 @@ REPORT_FORM = "device-layout.yml"
 REPORT_LIMIT = 6000
 # Manage Zigbee device > Signature shows the quirk's signature on a device that runs one; the device's
 # diagnostics hold the one before the quirk (original_signature), which a device layout report needs.
-REPORT_TOO_LONG = ("Too long for the link: paste the device's diagnostics here (the device's page > three-dot menu > Download diagnostics;"
-                   " they also hold its network address and attribute values, which this issue then shows);"
-                   " for a device that runs no quirk, Manage Zigbee device > Signature in that menu is enough.")
+REPORT_TOO_LONG = ("Too long for the link. Paste the device's diagnostics here: the device's page > three-dot menu > Download diagnostics."
+                   " They also hold its network address and attribute values, which this issue then shows."
+                   " For a device that runs no quirk, Manage Zigbee device > Signature in that menu is enough.")
 
 STATUS = {
-    "generated": "generated from Zigbee2MQTT, not verified on a device yet",
+    "generated": "generated, not verified on a device yet",
     "verified": "verified on a device",
 }
 
 # Why a file of ours goes.
 REMOVALS = {
-    plans.MOVED: "another file of this collection is for one of its devices",
-    plans.SHIPPED: "ZHA ships a quirk for this device now, this file steps back",
+    plans.MOVED: "another xquirks file is for one of its devices",
+    plans.SHIPPED: "ZHA ships a quirk for this device now. This file steps back",
     plans.HANDED_BACK: "ZHA can handle this device by itself now, xquirks is no longer needed for it",
-    plans.LEFT_OUT: "the devices that used it are left out (disabled, or excluded in the options)",
+    plans.LEFT_OUT: "the devices that used it are left out (disabled or excluded in the options)",
     plans.UNUSED: "none of your ZHA devices uses it any more",
     plans.OUTSIDE: "it is in a folder ZHA no longer loads custom quirks from",
 }
@@ -71,9 +71,9 @@ def runs(device: Device, ours: frozenset[str] = frozenset()) -> str:
     if quirk.startswith("zhaquirks."):
         return f"the quirk ZHA ships (`{quirk}`)"
     if f"{quirk}.py" in ours:
-        return f"`{quirk}` from this collection"
+        return f"`{quirk}` from xquirks"
     if quirk.startswith(plans.PREFIX):
-        return f"`{quirk}`, a file this integration does not manage (yours, or gone since ZHA loaded the folder)"
+        return f"`{quirk}`, a file xquirks does not manage (yours or gone since ZHA loaded the folder)"
     return f"the custom quirk `{quirk}`"
 
 
@@ -155,17 +155,17 @@ def _names(ids, devices: dict[str, Device]) -> str:
 
 def _lost(lost: Lost, devices: dict[str, Device]) -> str:
     why = {
-        plans.NO_FILE: "this collection no longer has a quirk for it",
-        plans.TWO_FILES: "two files of this collection claim it",
+        plans.NO_FILE: "xquirks no longer has a quirk for it",
+        plans.TWO_FILES: "two xquirks files claim it",
         plans.FILE_WITHDRAWN: f"the revision of `{lost.file}` on offer is withdrawn",
         plans.FILE_REFUSED: f"`{lost.file}` cannot be written: the guard refused it or it cannot be downloaded (see its repair issue)",
-        plans.FILE_CONFLICT: f"`{lost.file}` stays out: two files of this collection claim one of its devices",
+        plans.FILE_CONFLICT: f"`{lost.file}` stays out: two xquirks files claim one of its devices",
         plans.USERS_NAME: f"a file of yours is named `{lost.file}`",
         plans.USERS_QUIRK: f"`{lost.file}` would also claim {_names(lost.others, devices)}, on a custom quirk of yours",
         plans.FILE_MISFIT: f"its endpoints do not fit `{lost.file}` (see the notice for that file)",
         plans.FILE_NO_TAKE_OVER: f"`{lost.file}` does not take it over from ZHA's own quirk",
-    }[lost.reason] + ("; ZHA's own quirk takes it back" if lost.back else "")
-    line = f"    - {_names([lost.device], devices)} gets no quirk of this collection: {why}"
+    }[lost.reason] + (". ZHA's own quirk takes it back" if lost.back else "")
+    line = f"    - {_names([lost.device], devices)} gets no file from xquirks: {why}"
     return "\n".join([line, *("    " + item for item in _new_ids(lost.new_ids))])
 
 
@@ -207,9 +207,9 @@ def _pull_requests(entry: dict | None) -> list[str]:
     request's number (an int, content.check_entry), never taken from the manifest."""
     links = [f"[#{number}]({UPSTREAM_PR.format(number=number)})" for number in (int(pr["number"]) for pr in (entry or {}).get("upstream_open_prs", []))]
     if len(links) == 1:
-        return [f"    - an open zha-device-handlers pull request adds this device, testing it helps more: {links[0]}"]
+        return [f"    - an open zha-device-handlers pull request adds this device. Testing it helps more: {links[0]}"]
     if links:
-        return [f"    - open zha-device-handlers pull requests add this device, testing them helps more: {', '.join(links)}"]
+        return [f"    - open zha-device-handlers pull requests add this device. Testing them helps more: {', '.join(links)}"]
     return []
 
 

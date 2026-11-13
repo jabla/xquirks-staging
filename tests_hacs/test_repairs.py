@@ -412,7 +412,7 @@ async def test_removal_once_zha_applies_its_own_quirk(hass: HomeAssistant, zha: 
     await entry.runtime_data.async_refresh()
     assert listed(hass) == {**NOTHING, "remove": ["z2m_tuya_a.py"]}
     flow = await start_fix(hass, issue_of(hass, "changes"))
-    assert "ZHA ships a quirk for this device now, this file steps back" in flow["description_placeholders"]["changes"]
+    assert "ZHA ships a quirk for this device now. This file steps back" in flow["description_placeholders"]["changes"]
     await continue_fix(hass, flow, {"next_step_id": "apply"})
     assert list(quirks_dir.iterdir()) == []
 
@@ -497,16 +497,16 @@ async def test_manifest_and_device_strings_reach_the_list_as_plain_text(hass: Ho
     assert r"Tuya !\[\](https://tracker.example/seen.png)" in changes
     # The link is built from the pull request's number.
     assert "attacker.example" not in changes and "[#4242](https://github.com/zigpy/zha-device-handlers/pull/4242)" in changes
-    assert "Status: generated from Zigbee2MQTT, not verified on a device yet." in changes
+    assert "Status: generated, not verified on a device yet." in changes
 
 
 @pytest.mark.parametrize(
     ("numbers", "line"),
     [
-        ([4242], "an open zha-device-handlers pull request adds this device, testing it helps more: [#4242](https://github.com/zigpy/zha-device-handlers/pull/4242)"),
+        ([4242], "an open zha-device-handlers pull request adds this device. Testing it helps more: [#4242](https://github.com/zigpy/zha-device-handlers/pull/4242)"),
         (
             [4242, 4343],
-            "open zha-device-handlers pull requests add this device, testing them helps more: "
+            "open zha-device-handlers pull requests add this device. Testing them helps more: "
             "[#4242](https://github.com/zigpy/zha-device-handlers/pull/4242), [#4343](https://github.com/zigpy/zha-device-handlers/pull/4343)",
         ),
     ],

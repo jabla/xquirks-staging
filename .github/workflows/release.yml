@@ -80,6 +80,9 @@ jobs:
             echo "::error::release $TAG is published already"
             exit 1
           else
-            gh release create "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --verify-tag --draft --title "$TAG" --generate-notes
+            # Releases before 1.0.0 are betas: their title says so.
+            title="$TAG"
+            case "$TAG" in v0.*) title="$TAG (beta)" ;; esac
+            gh release create "$TAG" dist/*.zip --repo "$GITHUB_REPOSITORY" --verify-tag --draft --title "$title" --generate-notes
           fi
           gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false

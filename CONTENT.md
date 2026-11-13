@@ -1,14 +1,14 @@
 # Content format
 
 The format of the quirk files this repository publishes, as the xquirks integration and the quirk
-finder read them. This describes format 1.
+finder read them. This describes format 1. "Release" below means a release of the integration.
 
 ## Branch and tags
 
 - The orphan branch `content` holds one commit per published state, each on top of the previous
   one. It is never rewritten.
 - Each of these commits carries a lightweight tag `content-<n>`. `n` starts at 1 and grows by one
-  with each state. A tag never moves. The branch head is the commit of the newest tag; both are
+  with each state. A tag never moves. The branch head is the commit of the newest tag. Both are
   pushed together.
 - Commit messages are not part of the format.
 
@@ -36,7 +36,7 @@ misread them. A new field does not raise it: readers ignore fields they do not k
 ## Home Assistant release
 
 At a tag, `"homeassistant"` in `hacs.json` is the exact release the files were built for, patch
-number included. A release takes the state only on that Home Assistant release or newer; other keys
+number included. A release takes the state only on that Home Assistant release or newer. Other keys
 are not read. The `hacs.json` on `main` is a different file: HACS reads it to install the
 integration.
 
@@ -44,10 +44,10 @@ integration.
 
 An object of entries by slug. Every entry has:
 
-- `fingerprints`: `[[manufacturer or null, model], ...]`, the device names it is for;
-- `claimed_elsewhere` (optional, same shape): exact names it leaves to another entry;
-- `file`: `"quirks/z2m_<name>.py"`, or null when no file is shipped;
-- `status`: `"generated"`, `"verified"` or `"upstream"`;
+- `fingerprints`: `[[manufacturer or null, model], ...]`, the device names it is for
+- `claimed_elsewhere` (optional, same shape): exact names it leaves to another entry
+- `file`: `"quirks/z2m_<name>.py"` or null when no file is shipped
+- `status`: `"generated"`, `"verified"` or `"upstream"`
 - `swap` (optional): `{"ours": rows, "zha": rows}`, the entities of a file that takes a device over
   and those of ZHA's own quirk, each row `[cluster id, attribute id, platform, unique id suffix,
   name]`.
@@ -57,14 +57,14 @@ manufacturer or null, unless that exact pair is in `claimed_elsewhere`.
 
 An entry with a file also has:
 
-- `sha256` (64 hex digits) and `revision` (8 hex digits, the file's `Revision:` line);
-- `vendor`, `model`, `description` (optional);
-- `picture` and `picture_sha256` (optional; a picture without its sha256 is not shown);
+- `sha256` (64 hex digits) and `revision` (8 hex digits, the file's `Revision:` line)
+- `vendor`, `model`, `description` (optional)
+- `picture` and `picture_sha256` (optional): a picture without its sha256 is not shown
 - `upstream_open_prs` (optional): `[{"number": <n>, "title": ..., "author": ...}]`, open
-  zha-device-handlers pull requests for the device;
-- `sources` (optional): the zigbee-herdsman-converters and zha-device-handlers versions;
+  zha-device-handlers pull requests for the device
+- `sources` (optional): the zigbee-herdsman-converters and zha-device-handlers versions
 - `over_zha` (optional): `{"adds": [...], "zha_only": [...]}`, entity names of a file that takes a
-  device over;
+  device over
 - `endpoints` (optional): `{"<endpoint>": [cluster ids]}`, what the file's own check needs on the
   device.
 
@@ -86,7 +86,7 @@ a newer state it cannot use otherwise.
 
 ## How the integration reads it
 
-1. It lists the `content-<n>` tags through the GitHub API; annotated tags do not count.
+1. It lists the `content-<n>` tags through the GitHub API. Annotated tags do not count.
 2. From the newest tag down to the state it uses, it reads `content.json` and `hacs.json` at each
    tag's commit and takes the first state it can use (guard and Home Assistant release, above).
    Otherwise it keeps the state it has.
@@ -105,4 +105,4 @@ It reads every file at the commit a tag points to, never by the tag's name.
 
 The tag never moves, so both files belong to one state even while raw's cache still serves an older
 `state.json`. A format the page does not read gets a notice instead of the device list. The finder
-reads no quirk file; it links each one on GitHub at its tag.
+reads no quirk file. It links each one on GitHub at its tag.

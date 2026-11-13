@@ -569,7 +569,7 @@ def test_a_withdrawn_take_over_file_names_the_devices_zhas_quirk_takes_back():
     (lost,) = plan.remove[0].lost
     assert (lost.device, lost.reason, lost.back, lost.new_ids) == ("d1", plan_module.NO_FILE, True, ("Boost",))
     shown = integration.text.change_list(plan, devices, lambda n: n, {}, {})
-    assert "Taken gets no quirk of this collection: this collection no longer has a quirk for it; ZHA's own quirk takes it back" in shown
+    assert "Taken gets no file from xquirks: xquirks no longer has a quirk for it. ZHA's own quirk takes it back" in shown
     assert "new IDs in Home Assistant for Boost" in shown
     # Without a withdrawal the removal hands the device back and names the new IDs itself.
     plan = plan_for(st, devices, {path("t"): record})
@@ -586,7 +586,7 @@ def test_a_device_handed_back_past_a_target_it_does_not_fit_stays_in_the_list():
     assert kinds(plan)["remove"] == [("z2m_x.py", "moved")]
     (lost,) = plan.remove[0].lost
     assert (lost.device, lost.reason, lost.file, lost.back, lost.new_ids) == ("d1", plan_module.FILE_MISFIT, "z2m_t.py", True, ("Boost",))
-    assert "Hall gets no quirk of this collection: its endpoints do not fit `z2m_t.py`" in integration.text.change_list(plan, devices, lambda n: n, {}, {})
+    assert "Hall gets no file from xquirks: its endpoints do not fit `z2m_t.py`" in integration.text.change_list(plan, devices, lambda n: n, {}, {})
     # One device that fits moves, the other is named; a device on a name the file did not take over gets no new IDs.
     st2 = state(t={"fingerprints": [("Acme", "T-1")], "over_zha": TAKE["over_zha"], "swap": BOOST_SWAP, "endpoints": {"2": [0x0702]}})
     record = dropped_take_over(st2)
@@ -858,7 +858,7 @@ def test_a_file_that_does_not_take_a_name_over_is_no_file_for_its_device():
     assert update.devices == ("d1",)
     (lost,) = update.lost
     assert (lost.device, lost.reason, lost.file, lost.back) == ("d1", plan_module.FILE_NO_TAKE_OVER, "z2m_t.py", True)
-    assert "Hall gets no quirk of this collection: `z2m_t.py` does not take it over from ZHA's own quirk; ZHA's own quirk takes it back" in (
+    assert "Hall gets no file from xquirks: `z2m_t.py` does not take it over from ZHA's own quirk. ZHA's own quirk takes it back" in (
         integration.text.change_list(plan, devices, lambda n: n, {}, {}))
     # The state moves the name from a take-over file to one that does not take it over: no move.
     st = state(b={"fingerprints": [(None, "T-1")]})
