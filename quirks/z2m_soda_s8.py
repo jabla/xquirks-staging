@@ -1,0 +1,224 @@
+"""SODA S8: S8 premium window handle.
+
+Generated from the Zigbee2MQTT definition.
+Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
+Status: generated, not verified on hardware.
+Revision: 8d9d5493
+"""
+
+import functools
+import logging
+import pathlib
+
+import zhaquirks
+from zha.quirks import DEVICE_REGISTRY, DeviceMatch
+import zigpy.types as t
+from zigpy.zcl import foundation
+
+from zhaquirks.builder import (
+    BinarySensorDeviceClass,
+    EntityPlatform,
+    EntityType,
+    NumberDeviceClass,
+    UnitOfTime,
+)
+from zhaquirks.tuya import TUYA_CLUSTER_ID
+from zhaquirks.tuya.builder import TuyaQuirkBuilder
+
+
+class Alarm(t.enum8):
+    """alarm values (z2m)."""
+
+    IDLE = 0x00
+    ALARM = 0x01
+
+
+class OpeningMode(t.enum8):
+    """opening_mode values (z2m)."""
+
+    closed = 0x00
+    tilted = 0x01
+
+
+class Position(t.enum8):
+    """position values (z2m)."""
+
+    up = 0x01
+    down = 0x02
+    right = 0x03
+    left = 0x04
+
+
+class ButtonLeft(t.enum8):
+    """button_left values (z2m)."""
+
+    released = 0x00
+    pressed = 0x01
+
+
+class ButtonRight(t.enum8):
+    """button_right values (z2m)."""
+
+    released = 0x00
+    pressed = 0x01
+
+
+class VacationValue(t.enum8):
+    """vacation wire values (z2m)."""
+
+    off = 0x00
+    on = 0x01
+
+
+class Sensitivity(t.enum8):
+    """sensitivity values (z2m)."""
+
+    off = 0x00
+    low = 0x01
+    medium = 0x02
+    high = 0x03
+    max = 0x04
+
+
+class AlarmSwitchValue(t.enum8):
+    """alarm_switch wire values (z2m)."""
+
+    off = 0x00
+    on = 0x01
+
+
+class KeysoundValue(t.enum8):
+    """keysound wire values (z2m)."""
+
+    off = 0x00
+    on = 0x01
+
+
+class HandlesoundValue(t.enum8):
+    """handlesound wire values (z2m)."""
+
+    off = 0x00
+    on = 0x01
+
+
+class Calibrate(t.enum8):
+    """calibrate values (z2m)."""
+
+    clear = 0x00
+    execute = 0x01
+
+
+
+_LOGGER = logging.getLogger(__name__)
+_SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
+_STEPPED_BACK: set = set()
+
+# The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
+FINGERPRINTS = [('_TZE200_j7sgd8po', 'TS0601')]
+# Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
+CLAIMED_ELSEWHERE = set()
+# The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
+ENDPOINTS = {1: (0xEF00,)}
+
+
+@functools.cache
+def _is_shipped(source: str | None) -> bool:
+    return bool(source) and pathlib.Path(source).resolve().is_relative_to(_SHIPPED)
+
+
+def _misfit(device) -> str | None:
+    """Why the device does not fit ENDPOINTS, None when it does.
+
+    The device needs every endpoint in ENDPOINTS. Zigbee2MQTT sends a cluster it names no endpoint
+    for to the first endpoint that announces it, or to the device's first endpoint when none does:
+    each cluster in ENDPOINTS must land there on the endpoint this quirk puts it on.
+    """
+    announced = {ep_id: endpoint.in_clusters for ep_id, endpoint in sorted(device.endpoints.items()) if ep_id}
+    for ep_id, cluster_ids in ENDPOINTS.items():
+        if ep_id not in announced:
+            return f"it has no endpoint {ep_id}"
+        for cluster_id in cluster_ids:
+            first = next((other for other, clusters in announced.items() if cluster_id in clusters), None)
+            if first is None and min(announced) != ep_id:
+                return f"no endpoint has cluster 0x{cluster_id:04X} and the first endpoint is {min(announced)}, not {ep_id}"
+            if first is not None and first != ep_id:
+                return f"the first endpoint with cluster 0x{cluster_id:04X} is {first}, not {ep_id}"
+    return None
+
+
+def _shipped_quirk(device):
+    """The registry entry of a quirk shipped with ZHA that matches the device, None without one."""
+    for entry in DEVICE_REGISTRY:
+        # Green Power quirks (zha 2.4) never apply to a Zigbee device and cannot match one.
+        if not isinstance(entry.device_match, DeviceMatch):
+            continue
+        if _is_shipped(getattr(entry.source, "file", None)) and entry.device_match.matches(device):
+            return entry
+    return None
+
+
+def no_builtin_quirk(device) -> bool:
+    """Upstream first: step back for every device that a quirk shipped with ZHA matches.
+
+    ZHA tries this custom quirk before the shipped ones under the same name. This filter
+    checks each device against the shipped quirks (name, endpoint signature, firmware range)
+    and returns False when one matches, so ZHA falls through to the shipped quirk. Then it
+    steps back for a device whose endpoints do not fit this quirk (ENDPOINTS).
+    """
+    if (device.manufacturer, device.model) in CLAIMED_ELSEWHERE:
+        return False
+    shipped = _shipped_quirk(device)
+    if shipped is not None:
+        if device.ieee not in _STEPPED_BACK:
+            _STEPPED_BACK.add(device.ieee)
+            _LOGGER.warning(
+                "%s %s uses the quirk shipped with ZHA (%s); custom quirk %s is not needed for it",
+                device.manufacturer, device.model, shipped.source.label, __name__,
+            )
+        return False
+    misfit = _misfit(device)
+    if misfit is not None:
+        if (device.ieee, misfit) not in _STEPPED_BACK:
+            _STEPPED_BACK.add((device.ieee, misfit))
+            _LOGGER.warning(
+                "%s %s does not fit custom quirk %s (%s); ZHA handles it without this quirk",
+                device.manufacturer, device.model, __name__, misfit,
+            )
+        return False
+    return True
+
+
+(
+    TuyaQuirkBuilder()
+    .applies_to('_TZE200_j7sgd8po', 'TS0601')
+    .tuya_battery(dp_id=3, scale=2)
+    .tuya_temperature(dp_id=8, scale=10)
+    .tuya_humidity(dp_id=101, scale=100)
+    .tuya_dp_attribute(dp_id=102, attribute_name='alarm', type=Alarm, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: Alarm(int(x)))
+    .enum(attribute_name='alarm', enum_class=Alarm, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='alarm', fallback_name='Alarm')
+    .tuya_dp_attribute(dp_id=103, attribute_name='opening_mode', type=OpeningMode, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: OpeningMode(int(x)))
+    .enum(attribute_name='opening_mode', enum_class=OpeningMode, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='opening_mode', fallback_name='Opening mode')
+    .tuya_dp_attribute(dp_id=104, attribute_name='position', type=Position, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: Position(int(x)))
+    .enum(attribute_name='position', enum_class=Position, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='z2m_position', fallback_name='Position')
+    .tuya_dp_attribute(dp_id=105, attribute_name='button_left', type=ButtonLeft, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: ButtonLeft(int(x)))
+    .enum(attribute_name='button_left', enum_class=ButtonLeft, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='button_left', fallback_name='Button left')
+    .tuya_dp_attribute(dp_id=106, attribute_name='button_right', type=ButtonRight, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: ButtonRight(int(x)))
+    .enum(attribute_name='button_right', enum_class=ButtonRight, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='button_right', fallback_name='Button right')
+    .tuya_dp_attribute(dp_id=107, attribute_name='vacation', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: x == 1, dp_converter=lambda x: VacationValue.on if x else VacationValue.off)
+    .switch(attribute_name='vacation', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, translation_key='vacation', fallback_name='Vacation')
+    .tuya_enum(dp_id=108, attribute_name='sensitivity', enum_class=Sensitivity, entity_type=EntityType.CONFIG, translation_key='sensitivity', fallback_name='Sensitivity')
+    .tuya_dp_attribute(dp_id=109, attribute_name='alarm_switch', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: x == 1, dp_converter=lambda x: AlarmSwitchValue.on if x else AlarmSwitchValue.off)
+    .switch(attribute_name='alarm_switch', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, translation_key='alarm_switch', fallback_name='Alarm switch')
+    .tuya_number(dp_id=110, type=t.uint32_t, attribute_name='update_frequency', min_value=0, max_value=700, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='update_frequency', fallback_name='Update frequency')
+    .tuya_dp_attribute(dp_id=111, attribute_name='keysound', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: x == 1, dp_converter=lambda x: KeysoundValue.on if x else KeysoundValue.off)
+    .switch(attribute_name='keysound', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, translation_key='keysound', fallback_name='Keysound')
+    .tuya_dp_attribute(dp_id=112, attribute_name='battery_low', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: x == 0)
+    .binary_sensor(attribute_name='battery_low', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.DIAGNOSTIC, device_class=BinarySensorDeviceClass.BATTERY, translation_key='battery_low', fallback_name='Battery low')
+    .tuya_number(dp_id=113, type=t.uint32_t, attribute_name='duration', min_value=0, max_value=300, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, fallback_name='Duration')
+    .tuya_dp_attribute(dp_id=114, attribute_name='handlesound', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: x == 1, dp_converter=lambda x: HandlesoundValue.on if x else HandlesoundValue.off)
+    .switch(attribute_name='handlesound', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, translation_key='handlesound', fallback_name='Handlesound')
+    .tuya_enum(dp_id=120, attribute_name='calibrate', enum_class=Calibrate, entity_type=EntityType.CONFIG, translation_key='calibrate', fallback_name='Calibrate')
+    .skip_configuration()
+    .filter(no_builtin_quirk)
+    .add_to_registry()
+)

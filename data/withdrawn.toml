@@ -1,0 +1,13 @@
+# Revisions of shipped quirk files that must not be used (hand-written).
+#
+# The xquirks integration warns everyone who installed a listed revision; their change list updates
+# the file to a revision that is not withdrawn or removes it. Add an entry when a released revision
+# turns out to be wrong on devices; the fix ships as a new revision of the same file.
+#
+# Fields: file (the name in quirks/), revision (the 8 hex digits of its Revision line), reason (one
+# sentence for the warning).
+#
+# [[withdrawn]]
+# file = "z2m_vendor_model.py"
+# revision = "1a2b3c4d"
+# reason = "Reports the temperature ten times too high."
