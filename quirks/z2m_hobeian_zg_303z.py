@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: e73f296c
+Revision: 0aba3154
 """
 
 import functools
@@ -47,7 +47,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE200_wqashyqo', 'TS0601')]
+FINGERPRINTS = [('_TZE200_wqashyqo', 'TS0601'), ('_TZD200_7khnomgh', 'TS0601'), (None, 'HS303Z')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -140,6 +140,8 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('_TZE200_wqashyqo', 'TS0601')
+    .applies_to('_TZD200_7khnomgh', 'TS0601')
+    .applies_to(None, 'HS303Z')
     .tuya_dp_attribute(dp_id=1, attribute_name='water_warning', type=WaterWarning, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: WaterWarning(int(x)))
     .enum(attribute_name='water_warning', enum_class=WaterWarning, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='water_warning', fallback_name='Water warning')
     .tuya_temperature(dp_id=103, scale=10)

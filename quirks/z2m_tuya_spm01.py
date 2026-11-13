@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 6589b8df
+Revision: 77c6238b
 """
 
 import functools
@@ -142,6 +142,7 @@ def no_builtin_quirk(device) -> bool:
     .sensor(attribute_name='voltage', cluster_id=TUYA_CLUSTER_ID, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.STANDARD, fallback_name='Voltage')
     .sensor(attribute_name='current', cluster_id=TUYA_CLUSTER_ID, divisor=1000, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.CURRENT, unit=UnitOfElectricCurrent.AMPERE, entity_type=EntityType.STANDARD, fallback_name='Current')
     .sensor(attribute_name='power', cluster_id=TUYA_CLUSTER_ID, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.POWER, unit=UnitOfPower.WATT, entity_type=EntityType.STANDARD, fallback_name='Power')
+    # DP 9 (faults): a list of faults, ZHA has no list entity, not generated yet
     .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()

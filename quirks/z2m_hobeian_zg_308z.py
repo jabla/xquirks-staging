@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: f641c3f9
+Revision: 91fc6334
 """
 
 import functools
@@ -73,7 +73,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [(None, 'ZG-308Z'), ('HOBEIAN', 'ZG-308Z')]
+FINGERPRINTS = [('_TZD200_y0rvjm11', 'TS0601'), (None, 'ZG-308Z'), (None, 'HS308Z')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -165,8 +165,9 @@ def no_builtin_quirk(device) -> bool:
 
 (
     TuyaQuirkBuilder()
+    .applies_to('_TZD200_y0rvjm11', 'TS0601')
     .applies_to(None, 'ZG-308Z')
-    .applies_to('HOBEIAN', 'ZG-308Z')
+    .applies_to(None, 'HS308Z')
     .tuya_switch(dp_id=1, attribute_name='switch', entity_type=EntityType.STANDARD, translation_key='z2m_switch', fallback_name='Switch')
     .tuya_dp_attribute(dp_id=12, attribute_name='valve_status', type=ValveStatus, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: ValveStatus(int(x)))
     .enum(attribute_name='valve_status', enum_class=ValveStatus, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='valve_status', fallback_name='Valve status')

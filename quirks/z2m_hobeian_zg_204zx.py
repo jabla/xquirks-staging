@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware; corrected by devices/hobeian_zg_204zx.toml.
-Revision: 5f5ba40b
+Revision: cf0f0e8c
 """
 
 import functools
@@ -33,7 +33,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE200_w0ap83qu', 'TS0601'), (None, 'ZG-204ZX')]
+FINGERPRINTS = [('_TZE200_w0ap83qu', 'TS0601'), ('_TZD200_5ziwcyoe', 'TS0601'), (None, 'ZG-204ZX'), (None, 'HS204ZX')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -126,7 +126,9 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('_TZE200_w0ap83qu', 'TS0601')
+    .applies_to('_TZD200_5ziwcyoe', 'TS0601')
     .applies_to(None, 'ZG-204ZX')
+    .applies_to(None, 'HS204ZX')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
     .tuya_illuminance(dp_id=106)

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 56a309c4
+Revision: 927fd08f
 """
 
 import functools
@@ -42,7 +42,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE200_uli8wasj', 'TS0601'), ('_TZE200_grgol3xp', 'TS0601'), ('_TZE200_rhgsbacq', 'TS0601'), (None, 'ZG-204ZV'), (None, 'AY204T')]
+FINGERPRINTS = [('_TZE200_uli8wasj', 'TS0601'), ('_TZE200_grgol3xp', 'TS0601'), ('_TZE200_rhgsbacq', 'TS0601'), ('_TZD200_vfh3tuo1', 'TS0202'), (None, 'ZG-204ZV'), (None, 'AY204T'), (None, 'HS204ZV')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -137,8 +137,10 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE200_uli8wasj', 'TS0601')
     .applies_to('_TZE200_grgol3xp', 'TS0601')
     .applies_to('_TZE200_rhgsbacq', 'TS0601')
+    .applies_to('_TZD200_vfh3tuo1', 'TS0202')
     .applies_to(None, 'ZG-204ZV')
     .applies_to(None, 'AY204T')
+    .applies_to(None, 'HS204ZV')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
     .tuya_illuminance(dp_id=106)
@@ -153,7 +155,6 @@ def no_builtin_quirk(device) -> bool:
     .tuya_number(dp_id=105, type=t.int32s, attribute_name='temperature_calibration', min_value=-2, max_value=2, step=0.1, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.CONFIG, translation_key='temperature_calibration', fallback_name='Temperature calibration')
     .tuya_number(dp_id=104, type=t.int32s, attribute_name='humidity_calibration', min_value=-30, max_value=30, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='humidity_calibration', fallback_name='Humidity calibration')
     .tuya_number(dp_id=107, type=t.uint32_t, attribute_name='illuminance_interval', min_value=1, max_value=720, step=1, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='illuminance_interval', fallback_name='Illuminance interval')
-    .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()
 )

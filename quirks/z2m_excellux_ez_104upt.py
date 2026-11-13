@@ -1,9 +1,9 @@
-"""Excellux EZ-104UPT: Contact sensor and vibration sensor.
+"""Excellux EZ-104UPT: 4-in-1 Environmental sensor.
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 708222c5
+Revision: f9886456
 """
 
 import functools

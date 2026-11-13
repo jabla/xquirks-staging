@@ -1,9 +1,9 @@
-"""Moes ZM6LT1: Smart 1-phase energy power meter with CT sensor clamp.
+"""HYSYIOT HS209Z: PIR and millimeter-wave radar human presence sensor.
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 38fbbf4e
+Revision: 5d915ab5
 """
 
 import functools
@@ -14,35 +14,35 @@ import zhaquirks
 from zha.quirks import DEVICE_REGISTRY, DeviceMatch
 import zigpy.types as t
 from zigpy.zcl import foundation
+from zigpy.zcl.clusters.measurement import OccupancySensing
 
 from zhaquirks.builder import (
     EntityPlatform,
     EntityType,
     NumberDeviceClass,
-    SensorDeviceClass,
-    SensorStateClass,
-    UnitOfElectricCurrent,
-    UnitOfElectricPotential,
-    UnitOfEnergy,
-    UnitOfFrequency,
-    UnitOfPower,
+    UnitOfLength,
     UnitOfTime,
 )
 from zhaquirks.tuya import TUYA_CLUSTER_ID
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
-from zhaquirks.tuya.mcu import DPToAttributeMapping, TuyaMCUCluster
+from zhaquirks.tuya.tuya_motion import TuyaOccupancySensing
 
 
-def _be(data, start: int, width: int) -> int:
-    """The unsigned big-endian number in data[start:start + width] of a Tuya RAW datapoint."""
-    return int.from_bytes(bytes(data[start : start + width]), "big")
+class BatteryState(t.enum8):
+    """battery_state values (z2m)."""
+
+    low = 0x00
+    middle = 0x01
+    high = 0x02
 
 
-class OnlineState(t.enum8):
-    """online_state values (z2m)."""
+class MotionState(t.enum8):
+    """motion_state values (z2m)."""
 
-    offline = 0x00
-    online = 0x01
+    none = 0x00
+    large = 0x01
+    small = 0x02
+    static = 0x03
 
 
 
@@ -51,7 +51,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE284_2fnssffc', 'TS0601')]
+FINGERPRINTS = [('_TZD200_bgjlfsuy', 'TS0601'), ('_TZE200_bgjlfsuy', 'TS0601'), ('_TZD200_bgjlfsuy', 'TS0202'), ('_TZE200_bgjlfsuy', 'TS0202'), (None, 'HS209Z')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -143,26 +143,23 @@ def no_builtin_quirk(device) -> bool:
 
 (
     TuyaQuirkBuilder()
-    .applies_to('_TZE284_2fnssffc', 'TS0601')
-    .tuya_sensor(dp_id=1, attribute_name='energy', type=t.uint32_t, divisor=100, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, fallback_name='Energy')
-    .tuya_sensor(dp_id=2, attribute_name='reverse_energy', type=t.uint32_t, divisor=100, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, translation_key='reverse_energy', fallback_name='Reverse energy')
-    .tuya_attribute(dp_id=6, attribute_name='voltage', type=t.uint32_t, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report)
-    .tuya_attribute(dp_id=255, attribute_name='current', type=t.uint32_t, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report)
-    .tuya_attribute(dp_id=254, attribute_name='power', type=t.uint32_t, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report)
-    .tuya_dp_multi(dp_id=6, attribute_mapping=[DPToAttributeMapping(ep_attribute=TuyaMCUCluster.ep_attribute, attribute_name='voltage', converter=lambda x: _be(x, 2, 2)), DPToAttributeMapping(ep_attribute=TuyaMCUCluster.ep_attribute, attribute_name='current', converter=lambda x: _be(x, 5, 2)), DPToAttributeMapping(ep_attribute=TuyaMCUCluster.ep_attribute, attribute_name='power', converter=lambda x: _be(x, 8, 2))])
-    .sensor(attribute_name='voltage', cluster_id=TUYA_CLUSTER_ID, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.STANDARD, fallback_name='Voltage')
-    .sensor(attribute_name='current', cluster_id=TUYA_CLUSTER_ID, divisor=1000, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.CURRENT, unit=UnitOfElectricCurrent.AMPERE, entity_type=EntityType.STANDARD, fallback_name='Current')
-    .sensor(attribute_name='power', cluster_id=TUYA_CLUSTER_ID, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.POWER, unit=UnitOfPower.WATT, entity_type=EntityType.STANDARD, fallback_name='Power')
-    .tuya_sensor(dp_id=10, attribute_name='fault', type=t.uint32_t, entity_type=EntityType.STANDARD, translation_key='fault', fallback_name='Fault')
-    .tuya_switch(dp_id=20, attribute_name='clear_event', entity_type=EntityType.CONFIG, translation_key='clear_event', fallback_name='Clear event')
-    .tuya_dp_attribute(dp_id=44, attribute_name='online_state', type=OnlineState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: OnlineState(int(x)))
-    .enum(attribute_name='online_state', enum_class=OnlineState, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='online_state', fallback_name='Online state')
-    .tuya_sensor(dp_id=49, attribute_name='ac_frequency', type=t.uint32_t, divisor=100, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.FREQUENCY, unit=UnitOfFrequency.HERTZ, entity_type=EntityType.STANDARD, translation_key='ac_frequency', fallback_name='AC frequency')
-    .tuya_sensor(dp_id=51, attribute_name='active_energy', type=t.uint32_t, divisor=100, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, translation_key='active_energy', fallback_name='Active energy')
-    .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='countdown_1', min_value=0, max_value=2000, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='countdown_1', fallback_name='Countdown 1')
-    .tuya_switch(dp_id=104, attribute_name='device_restart', entity_type=EntityType.CONFIG, translation_key='device_restart', fallback_name='Device restart')
-    # DP 17 (alarm_set_2): z2m exposes no entity for it, not generated
-    .skip_configuration()
+    .applies_to('_TZD200_bgjlfsuy', 'TS0601')
+    .applies_to('_TZE200_bgjlfsuy', 'TS0601')
+    .applies_to('_TZD200_bgjlfsuy', 'TS0202')
+    .applies_to('_TZE200_bgjlfsuy', 'TS0202')
+    .applies_to(None, 'HS209Z')
+    .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 0)
+    .adds(TuyaOccupancySensing)
+    .tuya_dp_attribute(dp_id=3, attribute_name='battery_state', type=BatteryState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: BatteryState(int(x)))
+    .enum(attribute_name='battery_state', enum_class=BatteryState, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='battery_state', fallback_name='Battery state')
+    .tuya_battery(dp_id=4, scale=2)
+    .tuya_number(dp_id=12, type=t.uint32_t, attribute_name='pir_delay', min_value=30, max_value=120, step=30, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='pir_delay', fallback_name='PIR delay')
+    .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='detection_distance', min_value=1, max_value=500, step=1, unit=UnitOfLength.CENTIMETERS, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='detection_distance', fallback_name='Detection distance')
+    .tuya_number(dp_id=104, type=t.uint32_t, attribute_name='static_sensitivity', min_value=1, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='static_sensitivity', fallback_name='Static sensitivity')
+    .tuya_dp_attribute(dp_id=105, attribute_name='motion_state', type=MotionState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: MotionState(int(x)))
+    .enum(attribute_name='motion_state', enum_class=MotionState, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='motion_state', fallback_name='Motion state')
+    .tuya_switch(dp_id=107, attribute_name='indicator', entity_type=EntityType.CONFIG, translation_key='indicator', fallback_name='Indicator')
+    .tuya_number(dp_id=123, type=t.uint32_t, attribute_name='detection_sensitivity', min_value=1, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='detection_sensitivity', fallback_name='Detection sensitivity')
     .filter(no_builtin_quirk)
     .add_to_registry()
 )

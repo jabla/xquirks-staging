@@ -1,9 +1,10 @@
 """SONOFF ZBMicro: Zigbee USB repeater plug.
 
 Generated from the Zigbee2MQTT definition.
+Entity names follow zha-device-handlers#5703 (open pull request for this device).
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: verified on hardware.
-Revision: 57995edb
+Revision: 83d8818d
 """
 
 import functools
@@ -33,8 +34,7 @@ class CustomClusterEwelinkCluster(CustomCluster):
         network_led = ZCLAttributeDef(id=0x0001, type=t.Bool, manufacturer_code=None)
         back_light = ZCLAttributeDef(id=0x0002, type=t.Bool, manufacturer_code=None)
         fault_code = ZCLAttributeDef(id=0x0010, type=t.int32s, manufacturer_code=None)
-        radio_power = ZCLAttributeDef(id=0x0012, type=t.int16s, manufacturer_code=0x1286)
-        radio_power_with_manu_code = ZCLAttributeDef(id=0x0012, type=t.int16s, manufacturer_code=0x1286)
+        turbo_mode = ZCLAttributeDef(id=0x0012, type=t.int16s, manufacturer_code=0x1286)
         delayed_power_on_state = ZCLAttributeDef(id=0x0014, type=t.Bool, manufacturer_code=None)
         delayed_power_on_time = ZCLAttributeDef(id=0x0015, type=t.uint16_t, manufacturer_code=None)
         external_trigger_mode = ZCLAttributeDef(id=0x0016, type=t.uint8_t, manufacturer_code=None)
@@ -163,7 +163,7 @@ def no_builtin_quirk(device) -> bool:
 (
     QuirkBuilder(None, 'ZBMicro')
     .replaces(CustomClusterEwelinkCluster)
-    .switch(attribute_name=CustomClusterEwelinkCluster.AttributeDefs.radio_power_with_manu_code.name, cluster_id=CustomClusterEwelinkCluster.cluster_id, on_value=20, off_value=9, entity_type=EntityType.CONFIG, translation_key='rf_turbo_mode', fallback_name='RF turbo mode')
+    .switch(attribute_name=CustomClusterEwelinkCluster.AttributeDefs.turbo_mode.name, cluster_id=CustomClusterEwelinkCluster.cluster_id, on_value=20, off_value=9, entity_type=EntityType.CONFIG, translation_key='turbo_mode', fallback_name='Turbo mode')
     # switch: standard clusters, ZHA's own entities
     # power_on_behavior: standard clusters, ZHA's own entities
     # inching_control_set: z2m's own code, not generated

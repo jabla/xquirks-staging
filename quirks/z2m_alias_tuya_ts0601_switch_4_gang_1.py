@@ -5,7 +5,7 @@ Zigbee2MQTT treats these fingerprints as one device: an alias for the quirk ZHA 
 _TZE200_aqnazj70 / TS0601, _TZE200_mexisfik / TS0601.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: d709eb90
+Revision: 437825a7
 """
 
 import dataclasses
@@ -21,8 +21,8 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 
 # Per group: the shipped names whose registry entries are reused (targets) and the Zigbee
 # fingerprints (manufacturer, model) that get them. FINGERPRINTS lists every name of the file.
-ALIASES = [{'targets': [('_TZE200_aqnazj70', 'TS0601'), ('_TZE200_mexisfik', 'TS0601')], 'fingerprints': [('_TZE200_di3tfv5b', 'TS0601'), ('_TZE204_mexisfik', 'TS0601'), ('_TZE204_6wi2mope', 'TS0601'), ('_TZE200_6wi2mope', 'TS0601'), ('_TZE204_iik0pquw', 'TS0601'), ('_TZE204_aagrxlbd', 'TS0601'), ('_TZE204_f5efvtbv', 'TS0601'), ('_TZE204_lbhh5o6z', 'TS0601'), ('_TZE284_lbhh5o6z', 'TS0601')]}]
-FINGERPRINTS = [('_TZE200_di3tfv5b', 'TS0601'), ('_TZE204_mexisfik', 'TS0601'), ('_TZE204_6wi2mope', 'TS0601'), ('_TZE200_6wi2mope', 'TS0601'), ('_TZE204_iik0pquw', 'TS0601'), ('_TZE204_aagrxlbd', 'TS0601'), ('_TZE204_f5efvtbv', 'TS0601'), ('_TZE204_lbhh5o6z', 'TS0601'), ('_TZE284_lbhh5o6z', 'TS0601')]
+ALIASES = [{'targets': [('_TZE200_aqnazj70', 'TS0601'), ('_TZE200_mexisfik', 'TS0601')], 'fingerprints': [('_TZE200_di3tfv5b', 'TS0601'), ('_TZE204_mexisfik', 'TS0601'), ('_TZE204_6wi2mope', 'TS0601'), ('_TZE200_6wi2mope', 'TS0601'), ('_TZE204_iik0pquw', 'TS0601'), ('_TZE204_aagrxlbd', 'TS0601'), ('_TZE204_f5efvtbv', 'TS0601'), ('_TZE204_lbhh5o6z', 'TS0601'), ('_TZE284_lbhh5o6z', 'TS0601'), ('_TZE28C1000000_lbhh5o6z', 'TS0601')]}]
+FINGERPRINTS = [('_TZE200_di3tfv5b', 'TS0601'), ('_TZE204_mexisfik', 'TS0601'), ('_TZE204_6wi2mope', 'TS0601'), ('_TZE200_6wi2mope', 'TS0601'), ('_TZE204_iik0pquw', 'TS0601'), ('_TZE204_aagrxlbd', 'TS0601'), ('_TZE204_f5efvtbv', 'TS0601'), ('_TZE204_lbhh5o6z', 'TS0601'), ('_TZE284_lbhh5o6z', 'TS0601'), ('_TZE28C1000000_lbhh5o6z', 'TS0601')]
 
 
 @functools.cache

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 1b15e479
+Revision: deff1592
 """
 
 import functools
@@ -45,7 +45,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE284_1di7ujzp', 'TS0601')]
+FINGERPRINTS = [('_TZE284_1di7ujzp', 'TS0601'), ('_TZE284_pfbtmgo1', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -138,6 +138,7 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('_TZE284_1di7ujzp', 'TS0601')
+    .applies_to('_TZE284_pfbtmgo1', 'TS0601')
     .tuya_dp_attribute(dp_id=1, attribute_name='water', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: x == 1)
     .binary_sensor(attribute_name='water', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, translation_key='water', fallback_name='Water')
     .tuya_battery(dp_id=4, scale=2)

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: c169936f
+Revision: 050dbb14
 """
 
 import functools
@@ -87,7 +87,7 @@ FINGERPRINTS = [('SDevices', 'SBDV-00200')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
-ENDPOINTS = {1: (0x0B05, 0xFCCF)}
+ENDPOINTS = {3: (0x0B05, 0xFCCF)}
 
 
 @functools.cache
@@ -175,12 +175,12 @@ def no_builtin_quirk(device) -> bool:
 
 (
     QuirkBuilder('SDevices', 'SBDV-00200')
-    .replaces(ManuSpecificSDevicesCluster)
-    .switch(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.child_lock.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, entity_type=EntityType.STANDARD, translation_key='child_lock', fallback_name='Child lock')
-    .binary_sensor(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.neutral_presence.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, entity_type=EntityType.STANDARD, translation_key='neutral_presence', fallback_name='Neutral presence')
-    .enum(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.power_profile.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, enum_class=PowerProfile, entity_type=EntityType.STANDARD, translation_key='power_profile', fallback_name='Power profile')
-    .enum(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.led_indication_type.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, enum_class=LedIndicationType, entity_type=EntityType.STANDARD, translation_key='led_indication_type', fallback_name='LED indication type')
-    .sensor(attribute_name=Diagnostic.AttributeDefs.number_of_resets.name, cluster_id=Diagnostic.cluster_id, entity_type=EntityType.DIAGNOSTIC, translation_key='resets_count', fallback_name='Resets count')
+    .replaces(ManuSpecificSDevicesCluster, endpoint_id=3)
+    .switch(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.child_lock.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, endpoint_id=3, entity_type=EntityType.STANDARD, translation_key='child_lock', fallback_name='Child lock')
+    .binary_sensor(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.neutral_presence.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, endpoint_id=3, entity_type=EntityType.STANDARD, translation_key='neutral_presence', fallback_name='Neutral presence')
+    .enum(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.power_profile.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, endpoint_id=3, enum_class=PowerProfile, entity_type=EntityType.STANDARD, translation_key='power_profile', fallback_name='Power profile')
+    .enum(attribute_name=ManuSpecificSDevicesCluster.AttributeDefs.led_indication_type.name, cluster_id=ManuSpecificSDevicesCluster.cluster_id, endpoint_id=3, enum_class=LedIndicationType, entity_type=EntityType.STANDARD, translation_key='led_indication_type', fallback_name='LED indication type')
+    .sensor(attribute_name=Diagnostic.AttributeDefs.number_of_resets.name, cluster_id=Diagnostic.cluster_id, endpoint_id=3, entity_type=EntityType.DIAGNOSTIC, translation_key='resets_count', fallback_name='Resets count')
     # serial_number: standard clusters, ZHA's own entities
     .filter(no_builtin_quirk)
     .add_to_registry()

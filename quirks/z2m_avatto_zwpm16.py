@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: cfb97f2b
+Revision: 5d4b98cc
 """
 
 import functools
@@ -32,7 +32,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE204_goecjd1t', 'TS0601'), ('_TZE284_goecjd1t', 'TS0601')]
+FINGERPRINTS = [('_TZE204_goecjd1t', 'TS0601'), ('_TZE284_goecjd1t', 'TS0601'), ('_TZE28C1000000_goecjd1t', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -126,6 +126,7 @@ def no_builtin_quirk(device) -> bool:
     TuyaQuirkBuilder()
     .applies_to('_TZE204_goecjd1t', 'TS0601')
     .applies_to('_TZE284_goecjd1t', 'TS0601')
+    .applies_to('_TZE28C1000000_goecjd1t', 'TS0601')
     .tuya_sensor(dp_id=18, attribute_name='current', type=t.uint32_t, divisor=1000, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.CURRENT, unit=UnitOfElectricCurrent.AMPERE, entity_type=EntityType.STANDARD, fallback_name='Current')
     .tuya_sensor(dp_id=19, attribute_name='power', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.POWER, unit=UnitOfPower.WATT, entity_type=EntityType.STANDARD, fallback_name='Power')
     .tuya_sensor(dp_id=20, attribute_name='voltage', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.STANDARD, fallback_name='Voltage')

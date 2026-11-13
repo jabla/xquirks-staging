@@ -5,7 +5,7 @@ Zigbee2MQTT treats these fingerprints as one device: an alias for the quirk ZHA 
 _TZE284_nlrfgpny / TS0601.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: ba74db87
+Revision: 6c772ac4
 """
 
 import dataclasses
@@ -21,8 +21,8 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 
 # Per group: the shipped names whose registry entries are reused (targets) and the Zigbee
 # fingerprints (manufacturer, model) that get them. FINGERPRINTS lists every name of the file.
-ALIASES = [{'targets': [('_TZE284_nlrfgpny', 'TS0601')], 'fingerprints': [('_TZE200_nlrfgpny', 'TS0601')]}]
-FINGERPRINTS = [('_TZE200_nlrfgpny', 'TS0601')]
+ALIASES = [{'targets': [('_TZE284_nlrfgpny', 'TS0601')], 'fingerprints': [('_TZE200_nlrfgpny', 'TS0601'), ('_TZE2841000000_nlrfgpny', 'TS0601')]}]
+FINGERPRINTS = [('_TZE200_nlrfgpny', 'TS0601'), ('_TZE2841000000_nlrfgpny', 'TS0601')]
 
 
 @functools.cache

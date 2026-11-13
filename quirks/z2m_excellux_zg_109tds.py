@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 0f31910a
+Revision: 72cd48dd
 """
 
 import functools
@@ -175,7 +175,7 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('DTS1XM9', 'Excellux')
-    .tuya_sensor(dp_id=1, attribute_name='probe_temperature', type=t.int32s, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit=UnitOfTemperature.CELSIUS, entity_type=EntityType.STANDARD, translation_key='probe_temperature', fallback_name='Probe temperature')
+    .tuya_sensor(dp_id=1, attribute_name='temperature_probe', type=t.int32s, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit=UnitOfTemperature.CELSIUS, entity_type=EntityType.STANDARD, translation_key='temperature_probe', fallback_name='Temperature probe')
     .tuya_battery(dp_id=4, scale=2)
     .tuya_temperature(dp_id=5, scale=1)
     .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='sampling_interval', min_value=5, max_value=1200, step=5, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='sampling_interval', fallback_name='Sampling interval')

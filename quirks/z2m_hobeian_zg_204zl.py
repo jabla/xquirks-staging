@@ -7,7 +7,7 @@ ZHA ships for those does not fit them (different dp maps). These names get their
 instead of an alias; once a quirk shipped with ZHA matches them, this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 1f1f41ef
+Revision: 734cbcc9
 """
 
 import functools
@@ -51,7 +51,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE200_s6hzw8g2', 'TS0601'), ('_TZE200_jxyhl4eq', 'TS0601'), ('_TZE200_qxyh4r7g', 'TS0601'), ('_TZE200_na5qlzow', 'TS0601')]
+FINGERPRINTS = [('_TZE200_s6hzw8g2', 'TS0601'), ('_TZE200_jxyhl4eq', 'TS0601'), ('_TZE200_qxyh4r7g', 'TS0601'), ('_TZE200_na5qlzow', 'TS0601'), ('_TZD200_gfng0whq', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -147,6 +147,7 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE200_jxyhl4eq', 'TS0601')
     .applies_to('_TZE200_qxyh4r7g', 'TS0601')
     .applies_to('_TZE200_na5qlzow', 'TS0601')
+    .applies_to('_TZD200_gfng0whq', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 0)
     .adds(TuyaOccupancySensing)
     .tuya_battery(dp_id=4, scale=2)

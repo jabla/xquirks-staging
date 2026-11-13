@@ -1,9 +1,9 @@
-"""Tuya SPM01V2.5: Smart energy monitor for 1P+N system.
+"""Nova Digital ZTS-8W-B: 8 gang switch.
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 01c9dad5
+Revision: 88d6f7ec
 """
 
 import functools
@@ -16,16 +16,24 @@ import zigpy.types as t
 
 from zhaquirks.builder import (
     EntityType,
-    PERCENTAGE,
-    SensorDeviceClass,
-    SensorStateClass,
-    UnitOfElectricCurrent,
-    UnitOfElectricPotential,
-    UnitOfEnergy,
-    UnitOfFrequency,
-    UnitOfPower,
 )
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
+
+
+class PowerOnBehavior(t.enum8):
+    """power_on_behavior values (z2m)."""
+
+    off = 0x00
+    on = 0x01
+    previous = 0x02
+
+
+class BacklightMode(t.enum8):
+    """backlight_mode values (z2m)."""
+
+    off = 0x00
+    relay = 0x01
+    position = 0x02
 
 
 
@@ -34,7 +42,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE200_iwn0gpzz', 'TS0601'), ('_TZE204_iwn0gpzz', 'TS0601'), ('_TZE284_iwn0gpzz', 'TS0601')]
+FINGERPRINTS = [('_TZE204_nvxorhcj', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -126,17 +134,17 @@ def no_builtin_quirk(device) -> bool:
 
 (
     TuyaQuirkBuilder()
-    .applies_to('_TZE200_iwn0gpzz', 'TS0601')
-    .applies_to('_TZE204_iwn0gpzz', 'TS0601')
-    .applies_to('_TZE284_iwn0gpzz', 'TS0601')
-    .tuya_sensor(dp_id=1, attribute_name='energy', type=t.uint32_t, divisor=100, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, fallback_name='Energy')
-    .tuya_sensor(dp_id=23, attribute_name='produced_energy', type=t.uint32_t, divisor=100, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, translation_key='produced_energy', fallback_name='Produced energy')
-    .tuya_sensor(dp_id=32, attribute_name='ac_frequency', type=t.uint32_t, divisor=100, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.FREQUENCY, unit=UnitOfFrequency.HERTZ, entity_type=EntityType.STANDARD, translation_key='ac_frequency', fallback_name='AC frequency')
-    .tuya_sensor(dp_id=50, attribute_name='power_factor', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, unit=PERCENTAGE, entity_type=EntityType.STANDARD, translation_key='power_factor', fallback_name='Power factor')
-    .tuya_sensor(dp_id=102, attribute_name='voltage', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.STANDARD, fallback_name='Voltage')
-    .tuya_sensor(dp_id=103, attribute_name='current', type=t.uint32_t, divisor=1000, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.CURRENT, unit=UnitOfElectricCurrent.AMPERE, entity_type=EntityType.STANDARD, fallback_name='Current')
-    .tuya_sensor(dp_id=104, attribute_name='power', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.POWER, unit=UnitOfPower.WATT, entity_type=EntityType.STANDARD, fallback_name='Power')
-    # DP 18 (data_report_duration): z2m class write-only, not generated
+    .applies_to('_TZE204_nvxorhcj', 'TS0601')
+    .tuya_switch(dp_id=1, attribute_name='state_l1', entity_type=EntityType.STANDARD, translation_key='z2m_state', fallback_name='State')
+    .tuya_switch(dp_id=2, attribute_name='state_l2', entity_type=EntityType.STANDARD, translation_key='z2m_state', fallback_name='State')
+    .tuya_switch(dp_id=3, attribute_name='state_l3', entity_type=EntityType.STANDARD, translation_key='state_l3', fallback_name='State')
+    .tuya_switch(dp_id=4, attribute_name='state_l4', entity_type=EntityType.STANDARD, translation_key='state_l4', fallback_name='State')
+    .tuya_switch(dp_id=5, attribute_name='state_l5', entity_type=EntityType.STANDARD, translation_key='state_l5', fallback_name='State')
+    .tuya_switch(dp_id=6, attribute_name='state_l6', entity_type=EntityType.STANDARD, translation_key='state_l6', fallback_name='State')
+    .tuya_switch(dp_id=101, attribute_name='state_l7', entity_type=EntityType.STANDARD, translation_key='state_l7', fallback_name='State')
+    .tuya_switch(dp_id=102, attribute_name='state_l8', entity_type=EntityType.STANDARD, translation_key='state_l8', fallback_name='State')
+    .tuya_enum(dp_id=14, attribute_name='power_on_behavior', enum_class=PowerOnBehavior, entity_type=EntityType.CONFIG, translation_key='z2m_power_on_behavior', fallback_name='Power on behavior')
+    .tuya_enum(dp_id=15, attribute_name='backlight_mode', enum_class=BacklightMode, entity_type=EntityType.CONFIG, translation_key='backlight_mode', fallback_name='Backlight mode')
     .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()

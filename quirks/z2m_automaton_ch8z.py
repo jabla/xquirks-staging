@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 51d323d6
+Revision: fceb166d
 """
 
 import functools
@@ -141,8 +141,8 @@ def no_builtin_quirk(device) -> bool:
     .tuya_number(dp_id=10, type=t.uint32_t, attribute_name='countdown_l2', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='z2m_countdown', fallback_name='Countdown')
     .tuya_number(dp_id=11, type=t.uint32_t, attribute_name='countdown_l3', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='z2m_countdown', fallback_name='Countdown')
     .tuya_number(dp_id=12, type=t.uint32_t, attribute_name='countdown_l4', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='z2m_countdown', fallback_name='Countdown')
-    .tuya_number(dp_id=13, type=t.uint32_t, attribute_name='countdown_l5', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='countdown_l5', fallback_name='Countdown')
-    .tuya_number(dp_id=14, type=t.uint32_t, attribute_name='countdown_l6', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='countdown_l6', fallback_name='Countdown')
+    .tuya_number(dp_id=13, type=t.uint32_t, attribute_name='countdown_l5', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='z2m_countdown', fallback_name='Countdown')
+    .tuya_number(dp_id=14, type=t.uint32_t, attribute_name='countdown_l6', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='z2m_countdown', fallback_name='Countdown')
     .tuya_number(dp_id=15, type=t.uint32_t, attribute_name='countdown_l7', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='countdown_l7', fallback_name='Countdown')
     .tuya_number(dp_id=16, type=t.uint32_t, attribute_name='countdown_l8', min_value=0, max_value=43200, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='countdown_l8', fallback_name='Countdown')
     .tuya_enum(dp_id=27, attribute_name='power_on_behavior', enum_class=PowerOnBehavior, entity_type=EntityType.CONFIG, translation_key='z2m_power_on_behavior_2', fallback_name='Power-on behavior')

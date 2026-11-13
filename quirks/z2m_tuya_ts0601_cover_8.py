@@ -6,7 +6,7 @@ does not fit them (legacy). These names get their own quirk instead of an alias;
 shipped with ZHA matches them, this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 0ba18726
+Revision: 3be9e5df
 """
 
 import functools
@@ -67,7 +67,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE204_r0jdjrvi', 'TS0601'), ('_TZE200_g5xqosu7', 'TS0601'), ('_TZE204_g5xqosu7', 'TS0601'), ('_TZE284_fzo2pocs', 'TS0601')]
+FINGERPRINTS = [('_TZE204_r0jdjrvi', 'TS0601'), ('_TZE200_g5xqosu7', 'TS0601'), ('_TZE204_g5xqosu7', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -162,7 +162,6 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE204_r0jdjrvi', 'TS0601')
     .applies_to('_TZE200_g5xqosu7', 'TS0601')
     .applies_to('_TZE204_g5xqosu7', 'TS0601')
-    .applies_to('_TZE284_fzo2pocs', 'TS0601')
     .tuya_cover(control_dp=1, position_state_dp=3, position_control_dp=2, invert=False)
     .tuya_enum(dp_id=5, attribute_name='reverse_direction', enum_class=ReverseDirection, entity_type=EntityType.CONFIG, translation_key='reverse_direction', fallback_name='Reverse direction')
     .tuya_dp_attribute(dp_id=12, attribute_name='motor_fault', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: x == 1)

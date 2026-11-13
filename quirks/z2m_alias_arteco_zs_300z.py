@@ -4,12 +4,11 @@ Generated from the Zigbee2MQTT definition.
 Zigbee2MQTT treats these fingerprints as one device: an alias for the quirk ZHA ships for
 _TZE284_0ints6wl / TS0601.
 Zigbee2MQTT decodes some datapoints differently from that quirk; check them on the device:
-- DP 102: scale: ZHA shows 0.1 x z2m's value (wire 3600: z2m 36000, ZHA 3600)
-- DP 106: scale: ZHA shows 0.1 x z2m's value (wire 1000: z2m 10000, ZHA 1000)
+- DP 106: scale: ZHA shows 0.1 x z2m's value (wire 10: z2m 100, ZHA 10)
 - DP 110: kind: z2m bool, ZHA numeric number (NumberConfigurationEntity) (%)
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 2d309928
+Revision: 50b6894a
 """
 
 import dataclasses

@@ -5,7 +5,7 @@ Zigbee2MQTT treats these fingerprints as one device: an alias for the quirk ZHA 
 _TZE200_wktrysab / TS0601.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: fbf9e24c
+Revision: 785a2920
 """
 
 import dataclasses
@@ -21,8 +21,8 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 
 # Per group: the shipped names whose registry entries are reused (targets) and the Zigbee
 # fingerprints (manufacturer, model) that get them. FINGERPRINTS lists every name of the file.
-ALIASES = [{'targets': [('_TZE200_wktrysab', 'TS0601')], 'fingerprints': [('_TZE204_dvosyycn', 'TS0601'), ('_TZE284_dvosyycn', 'TS0601'), ('_TZE204_nvxorhcj', 'TS0601'), ('_TZE204_tdhnhhiy', 'TS0601'), ('_TZE204_ad2jkxwh', 'TS0601'), ('_TZE204_72bewjky', 'TS0601'), ('_TZE284_kow4ok3t', 'TS0601')]}]
-FINGERPRINTS = [('_TZE204_dvosyycn', 'TS0601'), ('_TZE284_dvosyycn', 'TS0601'), ('_TZE204_nvxorhcj', 'TS0601'), ('_TZE204_tdhnhhiy', 'TS0601'), ('_TZE204_ad2jkxwh', 'TS0601'), ('_TZE204_72bewjky', 'TS0601'), ('_TZE284_kow4ok3t', 'TS0601')]
+ALIASES = [{'targets': [('_TZE200_wktrysab', 'TS0601')], 'fingerprints': [('_TZE204_dvosyycn', 'TS0601'), ('_TZE284_dvosyycn', 'TS0601'), ('_TZE204_tdhnhhiy', 'TS0601'), ('_TZE204_ad2jkxwh', 'TS0601'), ('_TZE204_72bewjky', 'TS0601')]}]
+FINGERPRINTS = [('_TZE204_dvosyycn', 'TS0601'), ('_TZE284_dvosyycn', 'TS0601'), ('_TZE204_tdhnhhiy', 'TS0601'), ('_TZE204_ad2jkxwh', 'TS0601'), ('_TZE204_72bewjky', 'TS0601')]
 
 
 @functools.cache

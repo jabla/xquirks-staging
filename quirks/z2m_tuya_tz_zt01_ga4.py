@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 17503696
+Revision: 2e5d653d
 """
 
 import functools
@@ -40,7 +40,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE284_8se38w3c', 'TS0601')]
+FINGERPRINTS = [('_TZE284_8se38w3c', 'TS0601'), ('_TZE2841000000_8se38w3c', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -133,6 +133,7 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('_TZE284_8se38w3c', 'TS0601')
+    .applies_to('_TZE2841000000_8se38w3c', 'TS0601')
     .tuya_temperature(dp_id=1, scale=10)
     .tuya_humidity(dp_id=2, scale=100)
     .tuya_dp_attribute(dp_id=3, attribute_name='battery_state', type=BatteryState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: BatteryState(int(x)))

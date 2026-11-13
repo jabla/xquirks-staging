@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 10ad96c0
+Revision: 62dd7886
 """
 
 import functools
@@ -28,7 +28,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZ3210_eep3fewj', 'TS0225')]
+FINGERPRINTS = [('_TZ3210_eep3fewj', 'TS0225'), ('_TZ3210_ekjc2rzh', 'TS0225')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -121,6 +121,7 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('_TZ3210_eep3fewj', 'TS0225')
+    .applies_to('_TZ3210_ekjc2rzh', 'TS0225')
     .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='presence_delay', min_value=1, max_value=300, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='presence_delay', fallback_name='Presence delay')
     .tuya_illuminance(dp_id=104)
     .filter(no_builtin_quirk)

@@ -5,7 +5,7 @@ Zigbee2MQTT treats these fingerprints as one device: an alias for the quirk ZHA 
 _TZE200_emxxanvi / TS0601, _TZE200_wnp4d4va / TS0601.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: dd39ae08
+Revision: fae2c9a9
 """
 
 import dataclasses
@@ -21,8 +21,8 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 
 # Per group: the shipped names whose registry entries are reused (targets) and the Zigbee
 # fingerprints (manufacturer, model) that get them. FINGERPRINTS lists every name of the file.
-ALIASES = [{'targets': [('_TZE200_emxxanvi', 'TS0601'), ('_TZE200_wnp4d4va', 'TS0601')], 'fingerprints': [('_TZE200_mwvfvw8g', 'TS0601'), ('_TZE200_cduqh1l0', 'TS0601'), ('_TZE204_cduqh1l0', 'TS0601'), ('_TZE204_g4au0afs', 'TS0601'), ('_TZE204_w1wwxoja', 'TS0601'), ('_TZE204_lmgrbuwf', 'TS0601'), ('_TZE284_tdhnhhiy', 'TS0601'), ('_TZE204_wskr3up8', 'TS0601'), ('_TZE204_gxbdnfrh', 'TS0601'), ('_TZE284_g1enhdsi', 'TS0601'), ('_TZE284_r731zlxk', 'TS0601'), ('_TZE284_znkkcauq', 'TS0601')]}]
-FINGERPRINTS = [('_TZE200_mwvfvw8g', 'TS0601'), ('_TZE200_cduqh1l0', 'TS0601'), ('_TZE204_cduqh1l0', 'TS0601'), ('_TZE204_g4au0afs', 'TS0601'), ('_TZE204_w1wwxoja', 'TS0601'), ('_TZE204_lmgrbuwf', 'TS0601'), ('_TZE284_tdhnhhiy', 'TS0601'), ('_TZE204_wskr3up8', 'TS0601'), ('_TZE204_gxbdnfrh', 'TS0601'), ('_TZE284_g1enhdsi', 'TS0601'), ('_TZE284_r731zlxk', 'TS0601'), ('_TZE284_znkkcauq', 'TS0601')]
+ALIASES = [{'targets': [('_TZE200_emxxanvi', 'TS0601'), ('_TZE200_wnp4d4va', 'TS0601')], 'fingerprints': [('_TZE200_mwvfvw8g', 'TS0601'), ('_TZE200_cduqh1l0', 'TS0601'), ('_TZE204_cduqh1l0', 'TS0601'), ('_TZE204_g4au0afs', 'TS0601'), ('_TZE204_w1wwxoja', 'TS0601'), ('_TZE204_lmgrbuwf', 'TS0601'), ('_TZE204_wskr3up8', 'TS0601'), ('_TZE204_gxbdnfrh', 'TS0601'), ('_TZE284_g1enhdsi', 'TS0601'), ('_TZE284_r731zlxk', 'TS0601'), ('_TZE284_znkkcauq', 'TS0601'), ('_TZE284_1iii6x0y', 'TS0601')]}]
+FINGERPRINTS = [('_TZE200_mwvfvw8g', 'TS0601'), ('_TZE200_cduqh1l0', 'TS0601'), ('_TZE204_cduqh1l0', 'TS0601'), ('_TZE204_g4au0afs', 'TS0601'), ('_TZE204_w1wwxoja', 'TS0601'), ('_TZE204_lmgrbuwf', 'TS0601'), ('_TZE204_wskr3up8', 'TS0601'), ('_TZE204_gxbdnfrh', 'TS0601'), ('_TZE284_g1enhdsi', 'TS0601'), ('_TZE284_r731zlxk', 'TS0601'), ('_TZE284_znkkcauq', 'TS0601'), ('_TZE284_1iii6x0y', 'TS0601')]
 
 
 @functools.cache

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 73b35974
+Revision: 886b9940
 """
 
 import functools
@@ -38,7 +38,7 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [('_TZE200_jsaqgakf', 'TS0601'), ('_TZE200_u6x1zyv2', 'TS0601'), ('_TZE200_2pddnnrk', 'TS0601'), ('_TZE200_gt1gge3x', 'TS0601'), (None, 'ZG-223Z'), (None, 'HS118Z')]
+FINGERPRINTS = [('_TZE200_jsaqgakf', 'TS0601'), ('_TZE200_u6x1zyv2', 'TS0601'), ('_TZE200_2pddnnrk', 'TS0601'), ('_TZE200_gt1gge3x', 'TS0601'), ('_TZD200_gt1gge3x', 'TS0601'), (None, 'ZG-223Z'), (None, 'HS118Z'), (None, 'AY-223Z')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
@@ -134,8 +134,10 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE200_u6x1zyv2', 'TS0601')
     .applies_to('_TZE200_2pddnnrk', 'TS0601')
     .applies_to('_TZE200_gt1gge3x', 'TS0601')
+    .applies_to('_TZD200_gt1gge3x', 'TS0601')
     .applies_to(None, 'ZG-223Z')
     .applies_to(None, 'HS118Z')
+    .applies_to(None, 'AY-223Z')
     .tuya_dp_attribute(dp_id=1, attribute_name='rainwater', type=Rainwater, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: Rainwater(int(x)))
     .enum(attribute_name='rainwater', enum_class=Rainwater, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='rainwater', fallback_name='Rainwater')
     .tuya_illuminance(dp_id=102)
