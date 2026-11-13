@@ -15,5 +15,5 @@ file only when the guard stops accepting it, for example in the pull request tha
   the registry check of `test_edge_cases.py`
 - `manifest-kinds.json`: real manifest entries, one of each kind the integration reads (a zcl file
   with endpoints, a Tuya file, alias files, a take-over, a refused take-over, a device not built,
-  open upstream pull requests). Replace them with current entries of the same kinds when the
-  manifest changes its fields.
+  open upstream pull requests, a new file whose picture is not pinned yet). Replace them with
+  current entries of the same kinds when the manifest changes its fields.

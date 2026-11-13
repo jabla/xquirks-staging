@@ -411,12 +411,13 @@ TAKE_OVER = {"over_zha": {"adds": [], "zha_only": []}}
 
 
 def filter_of(text: str) -> str:
-    return text[text.index("def no_builtin_quirk("):]
+    """The filter's part of the fixed code: the check it calls, then the filter."""
+    return text[text.index("def _upstream_first("):]
 
 
 # The take-over filter in place of the plain one (both from fixed_code.json), as a file whose entry has
 # over_zha holds it.
-TO_TAKE_OVER = (filter_of(next(text for text in FIXED_CODE["module"] if "def no_builtin_quirk(" in text)), filter_of(FIXED_CODE["take_over"][0]))
+TO_TAKE_OVER = (filter_of(next(text for text in FIXED_CODE["module"] if "def _upstream_first(" in text)), filter_of(FIXED_CODE["take_over"][0]))
 # Names the filter reads, bound otherwise than by the fixed code or a literal checked as data: each
 # passed the guard before and made the filter raise inside ZHA's device lookup. (replacements, entry changes)
 STAND_INS = {

@@ -5,12 +5,8 @@
   "description": "Soil moisture sensor",
   "differs": [
    {
-    "dp": 102,
-    "reason": "scale: ZHA shows 0.1 x z2m's value (wire 3600: z2m 36000, ZHA 3600)"
-   },
-   {
     "dp": 106,
-    "reason": "scale: ZHA shows 0.1 x z2m's value (wire 1000: z2m 10000, ZHA 1000)"
+    "reason": "scale: ZHA shows 0.1 x z2m's value (wire 10: z2m 100, ZHA 10)"
    },
    {
     "dp": 110,
@@ -39,12 +35,12 @@
   "model": "ZS-300Z",
   "path": "alias",
   "picture": "ZS-300Z.png",
-  "picture_sha256": null,
-  "revision": "2d309928",
-  "sha256": "c818873f6587a30391ba0c9302d82d87fb8079d353de37ef3cd56f53b47f6297",
+  "picture_sha256": "606b877e1b36f99a6c276318e881f292ead9b58b162652a67c949926117a8900",
+  "revision": "50b6894a",
+  "sha256": "f37f88cf329b0d01f535f16447c8c2712fc4f6b23c96b5e65650b14fd9695d8f",
   "sources": {
    "zha-device-handlers": "2.4.1",
-   "zigbee-herdsman-converters": "26.123.0"
+   "zigbee-herdsman-converters": "26.130.0"
   },
   "status": "generated",
   "target": [
@@ -254,10 +250,10 @@
   "model": "FP1E",
   "path": "zcl",
   "picture": "FP1E.png",
-  "picture_sha256": null,
+  "picture_sha256": "cf5581cbca6c795b35d937db5b7035f7c8d454fab2693f458359e400cc8d3b1a",
   "sources": {
    "zha-device-handlers": "2.4.1",
-   "zigbee-herdsman-converters": "26.123.0"
+   "zigbee-herdsman-converters": "26.130.0"
   },
   "status": "upstream",
   "swap": {
@@ -684,6 +680,44 @@
   },
   "upstream_pr": null,
   "vendor": "Heiman"
+ },
+ "hysyiot_hs206z": {
+  "category": "new",
+  "claimed_elsewhere": [],
+  "description": "PIR motion and human presence sensor",
+  "endpoints": {
+   "1": [
+    61184
+   ]
+  },
+  "file": "quirks/z2m_hysyiot_hs206z.py",
+  "fingerprints": [
+   [
+    "_TZD200_rdbronta",
+    "TS0202"
+   ],
+   [
+    null,
+    "HS206Z"
+   ]
+  ],
+  "left_out": 0,
+  "left_out_gaps": 0,
+  "left_out_lines": [],
+  "left_out_unknown": 0,
+  "model": "HS206Z",
+  "path": "tuya",
+  "picture": "HS206Z.png",
+  "picture_sha256": null,
+  "revision": "23254cc3",
+  "sha256": "a0bbe1b29af0959c62f6afbf8453c367f0314f9f5e008e7aec5c9a9750d9b9eb",
+  "sources": {
+   "zha-device-handlers": "2.4.1",
+   "zigbee-herdsman-converters": "26.130.0"
+  },
+  "status": "generated",
+  "upstream_pr": null,
+  "vendor": "HYSYIOT"
  },
  "tuya_ts0105": {
   "category": "new",

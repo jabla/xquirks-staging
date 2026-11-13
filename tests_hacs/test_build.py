@@ -91,15 +91,15 @@ REAL_ENTRIES = json.loads((Path(__file__).resolve().parent / "fixtures" / "manif
 def test_real_manifest_entries_are_taken():
     """Frozen real entries: a zcl file with endpoints, a Tuya file that leaves a name to another file,
     alias files by target and by alias groups, a file that takes a device over, a refused take-over,
-    a device not built, a file with open upstream pull requests. A content state takes them; the
-    guard reads each file's targets from its entry."""
+    a device not built, a file with open upstream pull requests, a new file whose picture is not
+    pinned yet. A content state takes them; the guard reads each file's targets from its entry."""
     keys = {key for entry in REAL_ENTRIES.values() for key in entry}
     assert {"endpoints", "claimed_elsewhere", "target", "aliases", "over_zha", "swap", "not_built", "upstream_open_prs", "picture_sha256", "sources"} <= keys
     assert any(not entry.get("file") and entry.get("swap") for entry in REAL_ENTRIES.values())
     assert {type(entry.get("picture_sha256")) for entry in REAL_ENTRIES.values()} == {str, type(None)}
     state = content.from_manifest(REAL_ENTRIES, tag="content-3", content=3, homeassistant="2026.11.0", withdrawn={})
     files = {Path(entry["file"]).name: entry for entry in REAL_ENTRIES.values() if entry.get("file")}
-    assert len(files) == 6
+    assert len(files) == 7
     assert state.shas == {name: entry["sha256"] for name, entry in files.items()}
     assert state.revisions == {name: entry["revision"] for name, entry in files.items()}
     assert state.sources == next(iter(REAL_ENTRIES.values()))["sources"]

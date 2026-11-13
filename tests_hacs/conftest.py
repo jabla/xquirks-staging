@@ -60,11 +60,11 @@ def quirk_revision(slug: str, version: int = 1, entry: dict | None = None) -> st
 
 
 def take_over_filter() -> str:
-    """The upstream-first filter of a file that takes names over from ZHA's own quirk, as
-    fixed_code.json of this release holds it."""
+    """The upstream-first check of a file that takes names over from ZHA's own quirk (the part of
+    the filter that differs from the plain one), as fixed_code.json of this release holds it."""
     fixed = json.loads((Path(__file__).resolve().parents[1] / "custom_components" / DOMAIN / guard.FIXED_CODE).read_text())
     text = fixed["take_over"][0]
-    node = next(n for n in ast.parse(text).body if isinstance(n, ast.FunctionDef) and n.name == "no_builtin_quirk")
+    node = next(n for n in ast.parse(text).body if isinstance(n, ast.FunctionDef) and n.name == "_upstream_first")
     return ast.get_source_segment(text, node) + "\n"
 
 
