@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware; corrected by devices/hobeian_zg_204zx.toml.
-Revision: 8ff3314c
+Revision: 5f5ba40b
 """
 
 import functools
@@ -76,11 +76,11 @@ def _shipped_quirk(device):
     return None
 
 
-def no_builtin_quirk(device) -> bool:
+def _upstream_first(device) -> bool:
     """Upstream first: step back for every device that a quirk shipped with ZHA matches.
 
-    ZHA tries this custom quirk before the shipped ones under the same name. This filter
-    checks each device against the shipped quirks (name, endpoint signature, firmware range)
+    ZHA tries this custom quirk before the shipped ones under the same name. This check
+    compares each device with the shipped quirks (name, endpoint signature, firmware range)
     and returns False when one matches, so ZHA falls through to the shipped quirk. Then it
     steps back for a device whose endpoints do not fit this quirk (ENDPOINTS).
     """
@@ -107,6 +107,22 @@ def no_builtin_quirk(device) -> bool:
     return True
 
 
+def no_builtin_quirk(device) -> bool:
+    """The filter ZHA calls: _upstream_first, and a step back when that check fails.
+
+    ZHA calls it while it loads its devices, where an error would stop ZHA as a whole (a
+    newer ZHA may register entries this check does not know yet). Then this quirk steps
+    back for the device instead, and the log says so once.
+    """
+    try:
+        return _upstream_first(device)
+    except Exception:
+        if "check failed" not in _STEPPED_BACK:
+            _STEPPED_BACK.add("check failed")
+            _LOGGER.exception("custom quirk %s could not check a device; ZHA handles it without this quirk", __name__)
+        return False
+
+
 (
     TuyaQuirkBuilder()
     .applies_to('_TZE200_w0ap83qu', 'TS0601')
@@ -121,7 +137,6 @@ def no_builtin_quirk(device) -> bool:
     .tuya_number(dp_id=123, type=t.uint32_t, attribute_name='motion_detection_sensitivity', min_value=0, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='motion_detection_sensitivity', fallback_name='Motion detection sensitivity')
     .tuya_switch(dp_id=108, attribute_name='indicator', entity_type=EntityType.CONFIG, translation_key='indicator', fallback_name='Indicator')
     .tuya_battery(dp_id=110, scale=2)
-    .tuya_temperature(dp_id=111, scale=10)
     .tuya_humidity(dp_id=101, scale=100)
     .tuya_number(dp_id=105, type=t.int32s, attribute_name='temperature_calibration', min_value=-2, max_value=2, step=0.1, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.CONFIG, translation_key='temperature_calibration', fallback_name='Temperature calibration')
     .tuya_number(dp_id=104, type=t.int32s, attribute_name='humidity_calibration', min_value=-30, max_value=30, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='humidity_calibration', fallback_name='Humidity calibration')
