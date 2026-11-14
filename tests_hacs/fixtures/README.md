@@ -10,7 +10,7 @@ file only when the guard stops accepting it, for example in the pull request tha
 - `z2m_tuya_ts0105.py.txt`, `z2m_bosch_bsen_w.py.txt`, `z2m_moes_zm6lt1.py.txt`,
   `z2m_aqara_qbcz15lm.py.txt`, `z2m_alias_moes_zc_hm.py.txt`, `z2m_alias_neo_nas_wv03b.py.txt`: the
   guard tests (`test_guard_files.py`, `test_guard.py`); the Tuya file also in the registry check of
-  `test_edge_cases.py`
+  `test_edge_cases.py`, the MOES file also in the data query check of `test_data_query.py`
 - `z2m_sonoff_trv_zbt_*.py.txt`: two revisions of one file (change list tests), one of them also in
   the registry check of `test_edge_cases.py`
 - `manifest-kinds.json`: real manifest entries, one of each kind the integration reads (a zcl file

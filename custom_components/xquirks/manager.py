@@ -5,7 +5,11 @@ The files on offer come from the newest content-<n> state of the repository that
 and this Home Assistant release can use (checked every few hours, kept across restarts). A file is
 downloaded when the change list would write it: the guard (guard.py) checks its code before the
 list and again before any write into the custom quirks folder. Without such a state nothing is
-offered."""
+offered.
+
+Once ZHA loaded a file the list installed or updated, each Tuya device that runs it gets one data
+query: such a device sends its values by itself only when it joins, so its settings would stay
+unknown until a value changes."""
 
 from __future__ import annotations
 
@@ -52,6 +56,9 @@ from .const import (
     RETRY_INTERVAL,
     STORAGE_KEY,
     STORAGE_VERSION,
+    TUYA_CLUSTER,
+    TUYA_PATH,
+    TUYA_QUERY_DATA,
     ZHA_DOMAIN,
 )
 from .content import COMMIT, EMPTY, BadContent, ContentState, effective_revision, from_manifest, from_withdrawn_rows, sha256, withdrawn_rows
@@ -176,6 +183,24 @@ def _signature(device: Any) -> dict[int, dict[str, Any]] | None:
     return found
 
 
+def query_cluster(device: Any) -> Any | None:
+    """The cluster of a zha Device that a Tuya data query goes to; None when it has none.
+
+    That is the Tuya MCU cluster of the zigpy device under it, as the applied quirk made it: it
+    names its server command TUYA_QUERY_DATA "query_data" (zhaquirks' Tuya clusters do). The raw
+    cluster of a device without a quirk defines no commands.
+    """
+    endpoints = getattr(getattr(device, "device", None), "endpoints", None)
+    if not isinstance(endpoints, dict):
+        return None
+    for ep_id in sorted(ep for ep in endpoints if isinstance(ep, int) and ep):
+        cluster = getattr(endpoints[ep_id], "in_clusters", {}).get(TUYA_CLUSTER)
+        commands = getattr(cluster, "server_commands", None)
+        if isinstance(commands, dict) and getattr(commands.get(TUYA_QUERY_DATA), "name", None) == "query_data":
+            return cluster
+    return None
+
+
 def supported(homeassistant: str | None, version: str = HA_VERSION) -> bool:
     """This Home Assistant release is at least the one a state's files need."""
     try:
@@ -265,6 +290,8 @@ class Changed(Exception):
 
 # What a step of the list did, as the dialog lists it.
 DONE = {"remove": "removed", "update": "updated", "install": "installed"}
+# The changes after which the Tuya devices of a file get a data query, once ZHA loaded them.
+QUERIED = (DONE["install"], DONE["update"])
 
 
 def _why(err: Exception) -> str:
@@ -327,6 +354,13 @@ class QuirkManager:
         self.devices: dict[str, Device] = {}
         # device id -> its endpoints as it joined (_signature), for the report links.
         self.signatures: dict[str, dict[int, dict[str, Any]]] = {}
+        # device id -> its IEEE address, for the devices in self.devices.
+        self.ieees: dict[str, str] = {}
+        # Files ZHA loaded since the list installed or updated them: their Tuya devices get a data
+        # query at the next refresh that reads what ZHA applies (_query_tuya_devices).
+        self._query_due: set[str] = set()
+        # File name -> the data queries sent after ZHA loaded it (this run only), for diagnostics.
+        self.queries: dict[str, dict[str, Any]] = {}
         self.zha_state = ZHA_NOT_LOADED
         self.folder: str | None = None
         self.problem: str | None = None
@@ -403,6 +437,7 @@ class QuirkManager:
         pending = self.data.setdefault("pending", {"run": _RUN, "changes": []})
         if pending.get("run") != _RUN:
             # Home Assistant started since: ZHA loaded the folder with these changes.
+            self._query_due = {c["file"] for c in pending.get("changes", []) if c.get("change") in QUERIED}
             self.data["pending"] = {"run": _RUN, "changes": []}
         self._zha_was_down = not self.hass.config_entries.async_loaded_entries(ZHA_DOMAIN)
         entry = self.entry
@@ -652,7 +687,7 @@ class QuirkManager:
     def _zha_devices(self, quirks: dict[str, tuple[str | None, tuple[str, str] | None, dict | None]]) -> dict[str, Device]:
         registry = dr.async_get(self.hass)
         devices = {}
-        self.signatures = {}
+        self.signatures, self.ieees = {}, {}
         for zha_entry in self.hass.config_entries.async_entries(ZHA_DOMAIN):
             for device in dr.async_entries_for_config_entry(registry, zha_entry.entry_id):
                 ieee = next((value for domain, value in device.identifiers if domain == ZHA_DOMAIN), None)
@@ -665,6 +700,7 @@ class QuirkManager:
                 name = device.name_by_user or device.name or model
                 layout = tuple((ep, frozenset(data["input_clusters"])) for ep, data in sorted(signature.items())) if signature else None
                 devices[device.id] = Device(manufacturer, model, name, module, device.disabled_by is not None, layout)
+                self.ieees[device.id] = ieee
                 if signature:
                     # For the report link of a device a file does not fit.
                     self.signatures[device.id] = signature
@@ -717,11 +753,15 @@ class QuirkManager:
             # ZHA loaded the folder: what it loaded waits no longer.
             self._zha_reloaded = False
             changes = self.data["pending"]["changes"]
-            self.data["pending"]["changes"] = [c for c in changes if self._change_number.get(c["file"], 0) > self._changes_loaded]
+            loaded = [c for c in changes if self._change_number.get(c["file"], 0) <= self._changes_loaded]
+            self.data["pending"]["changes"] = [c for c in changes if c not in loaded]
+            # The Tuya devices of the files it loaded new or updated get a data query below.
+            self._query_due.update(c["file"] for c in loaded if c["change"] in QUERIED)
             await self._store.async_save(self.data)
         quirks = self._applied_quirks()
         if quirks is not None:
             self.devices = self._zha_devices(quirks)
+            self._query_tuya_devices()
         if self.state is None or self.folder is None:
             # No list of files yet, or no folder ZHA loads them from: nothing to change or compare. The
             # list and the notices stay as they are, ignored ones too; the next state or folder brings
@@ -1241,6 +1281,74 @@ class QuirkManager:
             self._sync_issues({}, only=("reload",))
         return bool(entries)
 
+    # Tuya data queries
+
+    @callback
+    def _query_tuya_devices(self) -> None:
+        """Send one Tuya data query to each device that runs a Tuya file ZHA loaded new or updated.
+
+        Called right after a refresh read what ZHA applies, so self.devices is current. A device is
+        asked when ZHA reports that it runs the file, it is not left out (disabled or excluded in the
+        options) and ZHA reports it available. A device on another quirk is never asked. The files
+        are due once: a device that misses the query is not asked again.
+        """
+        if not self._query_due:
+            return
+        names, self._query_due = self._query_due, set()
+        tuya = {stem(name): name for name in names if (self._entry(name) or {}).get("path") == TUYA_PATH}
+        excluded = frozenset(self.entry.options.get(CONF_EXCLUDED, ()))
+        wanted = {
+            self.ieees[device_id]: (tuya[device.quirk], device)
+            for device_id, device in self.devices.items()
+            if device.quirk in tuya and not device.disabled and device_id not in excluded and device_id in self.ieees
+        }
+        if not wanted:
+            return
+        try:
+            found = {str(proxy.device.ieee): proxy.device for proxy in self.hass.data[ZHA_DOMAIN].gateway_proxy.device_proxies.values()}
+        except (AttributeError, KeyError, TypeError):
+            _LOGGER.debug("No Tuya data query: cannot read ZHA's devices", exc_info=True)
+            return
+        # What became of each device, per file (the devices by manufacturer and model only: people
+        # share diagnostics in public issues).
+        stamp = dt_util.utcnow().isoformat(timespec="seconds")
+        results: dict[str, list[str]] = {name: [] for name, _device in wanted.values()}
+        self.queries.update({name: {"time": stamp, "devices": rows} for name, rows in results.items()})
+        targets = []
+        for ieee, (name, device) in sorted(wanted.items()):
+            # The refresh read the quirk of each device in self.devices from these devices just now.
+            zha_device = found.get(ieee)
+            label = f"{device.manufacturer} {device.model}"
+            if (cluster := query_cluster(zha_device)) is None:
+                why = "its quirk has no Tuya data query"
+            elif not getattr(zha_device, "available", False):
+                why = "ZHA reports it unavailable"
+            else:
+                targets.append((cluster, ieee, name, label, results[name]))
+                continue
+            _LOGGER.debug("No Tuya data query to %s for %s: %s", ieee, name, why)
+            results[name].append(f"{label}: skipped, {why}")
+        if targets:
+            self.entry.async_create_background_task(self.hass, self._async_query(targets), "xquirks Tuya data query")
+
+    async def _async_query(self, targets: list[tuple[Any, str, str, str, list[str]]]) -> None:
+        """Send the data queries, one device after the other: (cluster, IEEE, file, label, results).
+
+        The device answers with its datapoints, not with a reply to the query: none is awaited, zigpy
+        waits only until the frame is sent (and tries again when that fails, as for any request).
+        A sleepy battery device may miss it: it shows its values when it next reports.
+        """
+        for cluster, ieee, name, label, results in targets:
+            try:
+                await cluster.command(TUYA_QUERY_DATA, expect_reply=False)
+            except Exception as err:  # noqa: BLE001 - best effort: whatever went wrong, the next device is asked
+                why = str(err) or type(err).__name__
+                _LOGGER.debug("Tuya data query to %s for %s not delivered: %s", ieee, name, why)
+                results.append(f"{label}: not delivered ({why})")
+            else:
+                _LOGGER.debug("Sent a Tuya data query to %s for %s", ieee, name)
+                results.append(f"{label}: sent")
+
     async def async_clean_temp(self) -> None:
         if folder := zha_folder(self.hass):
             async with self._lock:
@@ -1318,4 +1426,6 @@ class QuirkManager:
             "waiting_for_the_check": dict(sorted(self._unchecked.items())),
             "cannot_be_downloaded": {name: error for name in plan.refused if (error := self.unavailable(name))},
             "pending_zha_reload": [f"{c['file']}: {c['change']}" for c in self.data["pending"]["changes"]],
+            # The Tuya data queries after ZHA loaded a file the list installed or updated (this run).
+            "tuya_data_queries": dict(sorted(self.queries.items())),
         }

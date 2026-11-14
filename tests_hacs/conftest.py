@@ -297,6 +297,24 @@ def quirks_dir(tmp_path: Path) -> Path:
 NO_QUIRK = "zigpy.device.Device"
 
 
+class TuyaCluster:
+    """The Tuya MCU cluster a Tuya quirk puts on endpoint 1, with the commands zhaquirks defines for
+    it (or the given ones: {} for a cluster that defines none). It records each command sent and
+    raises error when one is given."""
+
+    def __init__(self, error: Exception | None = None, commands: dict | None = None) -> None:
+        from zhaquirks.tuya.mcu import TuyaMCUCluster
+
+        self.server_commands = TuyaMCUCluster.server_commands if commands is None else commands
+        self.error = error
+        self.sent: list[tuple[int, tuple, dict]] = []
+
+    async def command(self, command_id: int, *args, **kwargs):
+        self.sent.append((command_id, args, kwargs))
+        if self.error is not None:
+            raise self.error
+
+
 @dataclass
 class Zha:
     """The parts of ZHA the integration reads: its YAML config, its gateway, its devices.
@@ -318,6 +336,10 @@ class Zha:
     zigpy: dict[str, tuple[str, str]] = field(default_factory=dict)
     # ieee -> zigpy's original signature of the device (endpoints as it joined)
     signatures: dict[str, dict] = field(default_factory=dict)
+    # ieee -> the Tuya MCU cluster on endpoint 1 of the zigpy device (a Tuya device)
+    tuya: dict[str, TuyaCluster] = field(default_factory=dict)
+    # Devices ZHA reports unavailable.
+    unavailable: set[str] = field(default_factory=set)
 
     def add_device(self, ieee: str, manufacturer: str, model: str, name: str | None = None) -> str:
         device = dr.async_get(self.hass).async_get_or_create(
@@ -352,8 +374,10 @@ class Zha:
             self.data.gateway_proxy = SimpleNamespace(device_proxies=proxies)
 
     def _device(self, ieee: str, quirk: str) -> SimpleNamespace:
-        device = SimpleNamespace(ieee=ieee, quirk_class=quirk, quirk_applied=":" in quirk)
+        device = SimpleNamespace(ieee=ieee, quirk_class=quirk, quirk_applied=":" in quirk, available=ieee not in self.unavailable)
         zigpy_device = SimpleNamespace()
+        if ieee in self.tuya:
+            zigpy_device.endpoints = {0: SimpleNamespace(), 1: SimpleNamespace(in_clusters={0xEF00: self.tuya[ieee]})}
         if ieee in self.sources:
             zigpy_device._quirk_registry_entry = SimpleNamespace(source=SimpleNamespace(file=self.sources[ieee], module=quirk.split(":", 1)[0]))
         if ieee in self.zigpy:

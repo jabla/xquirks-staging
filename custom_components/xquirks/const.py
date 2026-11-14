@@ -18,6 +18,13 @@ STORAGE_VERSION = 1
 # Seconds to wait for more device registry changes before checking again.
 REFRESH_COOLDOWN = 10
 
+# A Tuya device that talks through the Tuya MCU cluster sends all its datapoints by itself only when
+# it joins. A data query (a command without payload) makes it send them again. The manifest marks
+# the files for such devices with this path.
+TUYA_PATH = "tuya"
+TUYA_CLUSTER = 0xEF00
+TUYA_QUERY_DATA = 0x03
+
 # The repository whose content-<n> tags carry the quirk files.
 REPOSITORY = "jabla/xquirks"
 TAGS_URL = f"https://api.github.com/repos/{REPOSITORY}/git/matching-refs/tags/content-"
