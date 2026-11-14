@@ -4,10 +4,10 @@
   "codeowners": ["@jabla"],
   "config_flow": true,
   "dependencies": ["http", "zha"],
-  "documentation": "https://github.com/jabla/xquirks",
+  "documentation": "https://github.com/jabla/xquirks-staging",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/jabla/xquirks/issues",
+  "issue_tracker": "https://github.com/jabla/xquirks-staging/issues",
   "requirements": [],
   "single_config_entry": true,
   "version": "0.0.0"

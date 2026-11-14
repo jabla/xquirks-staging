@@ -27,7 +27,7 @@ TUYA_CLUSTER = 0xEF00
 TUYA_QUERY_DATA = 0x03
 
 # The repository whose content-<n> tags carry the quirk files.
-REPOSITORY = "jabla/xquirks"
+REPOSITORY = "jabla/xquirks-staging"
 TAGS_URL = f"https://api.github.com/repos/{REPOSITORY}/git/matching-refs/tags/content-"
 # Files are read at the commit a tag points to, never by the tag's name: a branch of the same name
 # must not stand in for the protected tag.
