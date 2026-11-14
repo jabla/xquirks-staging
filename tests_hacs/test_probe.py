@@ -21,8 +21,11 @@ class FakeWS:
     """Keeps one select's or number's state; a Tuya data query fails while the device is away. drops:
     how often the device drops a write of a value before it takes one."""
 
-    def __init__(self, state: str, away: bool = False, drops: dict | None = None, entity_id: str = SELECT) -> None:
+    def __init__(self, state: str, away: bool = False, drops: dict | None = None, entity_id: str = SELECT, times_out: bool = False) -> None:
         self.state, self.away, self.written, self.drops, self.entity_id = state, away, [], dict(drops or {}), entity_id
+        # times_out: ZHA's service raises although the device answered (ZHA 2.4 waits for a reply a
+        # Tuya device never sends). frames: what last_seen counts, one more per answered query.
+        self.times_out, self.frames = times_out, 0
 
     def wait(self, seconds: float) -> None:
         probe.time.sleep(seconds)
@@ -30,8 +33,14 @@ class FakeWS:
     def call(self, message: dict):
         if message["type"] == "get_states":
             return [{"entity_id": self.entity_id, "state": self.state, "attributes": {"options": ["a", "b", "c"]}}]
-        if message.get("service") == "issue_zigbee_cluster_command" and self.away:
-            raise RuntimeError("call_service: Failed to send request: device did not respond")
+        if message["type"] == "zha/device":
+            return {"last_seen": f"2026-11-14T20:00:{self.frames:02d}"}
+        if message.get("service") == "issue_zigbee_cluster_command":
+            if self.away:
+                raise RuntimeError("call_service: Failed to send request: device did not respond")
+            self.frames += 1
+            if self.times_out:
+                raise RuntimeError("call_service: unknown_error")
         if message.get("service") in ("select_option", "set_value"):
             data = message["service_data"]
             value = data.get("option", data.get("value"))
@@ -61,6 +70,24 @@ def test_unreachable_device_stops_the_check_and_still_restores(monkeypatch):
     # The restore went out, only the query after it failed.
     assert lines[1].startswith("Sensor mode: wrote b back, but could not read it back: check that it shows b")
     assert ws.written == ["a", "b"]
+
+
+def test_a_query_that_times_out_on_a_device_that_answered_goes_on(monkeypatch):
+    """ZHA 2.4 waits for a reply to the Tuya data query that the device never sends and raises: the
+    device answered all the same (its last_seen moved), so the check goes on."""
+    monkeypatch.setattr(probe.time, "sleep", lambda _: None)
+    ws = FakeWS("b", times_out=True)
+    assert probe.tuya_query(ws, "ieee", 0) is None
+    lines = probe.check_setting(ws, {"entity_id": SELECT, "original_name": "Sensor mode"}, {"state": "b", "attributes": {"options": ["a", "b", "c"]}}, "ieee", True, 0, None)
+    assert lines == ["Sensor mode: wrote a, HA shows a", "Sensor mode: wrote c, HA shows c", "Sensor mode: wrote b, HA shows b"]
+
+
+def test_a_query_without_a_frame_from_the_device_says_so(monkeypatch):
+    monkeypatch.setattr(probe.time, "sleep", lambda _: None)
+    ws = FakeWS("b", away=True)
+    assert probe.tuya_query(ws, "ieee", 0) == "call_service: Failed to send request: device did not respond"
+    ws.away, ws.call = False, lambda message: {"last_seen": "2026-11-14T20:00:00"} if message["type"] == "zha/device" else None
+    assert probe.tuya_query(ws, "ieee", 0) == "no frame from the device after the query"
 
 
 def test_restore_that_does_not_go_out_is_flagged(monkeypatch):

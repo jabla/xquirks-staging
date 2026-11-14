@@ -234,10 +234,33 @@ def raw_value(text: str) -> str:
     return {"Bool.false": "0", "Bool.true": "1"}.get(text, text)
 
 
-def tuya_query(ws: HAWebSocket, ieee: str) -> None:
-    ws.call({"type": "call_service", "domain": "zha", "service": "issue_zigbee_cluster_command",
-             "service_data": {"ieee": ieee, "endpoint_id": 1, "cluster_id": TUYA_CLUSTER, "cluster_type": "in",
-                              "command": 3, "command_type": "server", "params": {}}})
+def last_seen(ws: HAWebSocket, ieee: str) -> str | None:
+    """When ZHA last got a frame from the device; None when that cannot be read."""
+    try:
+        device = ws.call({"type": "zha/device", "ieee": ieee})
+    except RuntimeError:
+        return None
+    return device.get("last_seen") if isinstance(device, dict) else None
+
+
+def tuya_query(ws: HAWebSocket, ieee: str, wait: float) -> str | None:
+    """Ask a Tuya device for its values, then wait. A Tuya device answers with datapoint reports, not
+    with a reply to the command, so ZHA's service can time out on a device that answered (ZHA 2.4).
+    Whether it answered tells its last_seen, which moves with every frame from it. None when it
+    answered, else why not."""
+    before = last_seen(ws, ieee)
+    error = None
+    try:
+        ws.call({"type": "call_service", "domain": "zha", "service": "issue_zigbee_cluster_command",
+                 "service_data": {"ieee": ieee, "endpoint_id": 1, "cluster_id": TUYA_CLUSTER, "cluster_type": "in",
+                                  "command": 3, "command_type": "server", "params": {}}})
+    except RuntimeError as err:
+        error = str(err)
+    ws.wait(wait)
+    after = last_seen(ws, ieee)
+    if after is not None and after != before:
+        return None
+    return error or "no frame from the device after the query"
 
 
 def set_value(ws: HAWebSocket, entity_id: str, value) -> None:
@@ -279,9 +302,8 @@ def check_setting(ws: HAWebSocket, entity: dict, state: dict, ieee: str, tuya: b
             set_value(ws, entity_id, target)
             sent.append(target)
             ws.wait(wait)
-            if tuya:
-                tuya_query(ws, ieee)
-                ws.wait(wait)
+            if tuya and (silent := tuya_query(ws, ieee, wait)):
+                raise RuntimeError(silent)
             now = states_of(ws, {entity_id}).get(entity_id, {}).get("state", "no state (entity gone)")
             if shows(now, target):
                 break
@@ -330,10 +352,9 @@ def main() -> None:
     unreachable = None
     if args.query and tuya:
         try:
-            tuya_query(ws, ieee)
-        except (RuntimeError, OSError) as error:  # OSError: the socket timed out or closed
+            unreachable = tuya_query(ws, ieee, args.wait)
+        except OSError as error:  # the socket timed out or closed
             unreachable = str(error)
-        ws.wait(args.wait)
     states = states_of(ws, {e["entity_id"] for e in entities})
 
     out = pathlib.Path(args.out)
