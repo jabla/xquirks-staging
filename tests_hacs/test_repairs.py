@@ -449,6 +449,20 @@ async def test_an_update_leaves_a_file_changed_after_the_list_was_made(hass: Hom
     assert issue_of(hass, "changed").translation_placeholders["file"] == "z2m_tuya_a.py"
 
 
+async def test_a_check_without_a_newer_state_sees_a_file_edited_by_hand(hass: HomeAssistant, zha: Zha, repo_dir: Path, quirks_dir: Path):
+    """The check button reads the folder also when no newer state came: an edit by hand shows at once,
+    not only at the next ZHA reload or restart."""
+    zha.add_device(IEEE_A, "_TZE200_aaaa", "TS0601")
+    entry = await setup_entry(hass, repo_dir)
+    await apply_list(hass)
+    zha.reload({IEEE_A: "z2m_tuya_a:TuyaA"})
+    await hass.async_block_till_done()
+    assert issues_of(hass, "changed") == []
+    (quirks_dir / "z2m_tuya_a.py").write_bytes(b"# edited\n")
+    await entry.runtime_data.async_check()
+    assert issue_of(hass, "changed").translation_placeholders["file"] == "z2m_tuya_a.py"
+
+
 async def test_fix_flow_when_the_entry_is_not_loaded(hass: HomeAssistant, zha: Zha, repo_dir: Path):
     zha.add_device(IEEE_A, "_TZE200_aaaa", "TS0601")
     entry = await setup_entry(hass, repo_dir)
