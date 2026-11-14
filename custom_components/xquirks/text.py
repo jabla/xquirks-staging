@@ -201,6 +201,7 @@ def _lost(lost: Lost, devices: dict[str, Device]) -> str:
         plans.USERS_QUIRK: f"`{lost.file}` would also claim {_names(lost.others, devices)}, on a custom quirk of yours",
         plans.FILE_MISFIT: f"its endpoints do not fit `{lost.file}` (see the notice for that file)",
         plans.FILE_NO_TAKE_OVER: f"`{lost.file}` does not take it over from ZHA's own quirk",
+        plans.FILE_HELD_BACK: f"`{lost.file}` is held back until it is verified on a device (see its notice)",
     }[lost.reason] + (". ZHA's own quirk takes it back" if lost.back else "")
     line = f"    - {_names([lost.device], devices)} gets no file from xquirks: {why}"
     return "\n".join([line, *("    " + item for item in _new_ids(lost.new_ids))])

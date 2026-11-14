@@ -11,6 +11,8 @@ ZHA_DOMAIN = "zha"
 CONF_CUSTOM_QUIRKS_PATH = "custom_quirks_path"
 # Options: the ids of the devices xquirks leaves alone.
 CONF_EXCLUDED = "excluded"
+# Options: offer high-risk files that are not verified on a device (held back while off).
+CONF_HIGH_RISK = "high_risk"
 
 STORAGE_KEY = f"{DOMAIN}.installed"
 STORAGE_VERSION = 1

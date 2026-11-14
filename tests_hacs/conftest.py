@@ -48,9 +48,14 @@ MANIFEST = {
         "status": "generated",
         "path": "tuya",
         "upstream_open_prs": [UPSTREAM_PR],
+        "risk": "low",
+        "risk_why": [],
     },
-    "acme_b": {"file": "quirks/z2m_acme_b.py", "fingerprints": [[None, "B-1"]], "claimed_elsewhere": [["Other", "B-1"]], "vendor": "Acme", "model": "B-1", "status": "verified", "path": "zcl"},
-    "acme_c": {"file": "quirks/z2m_acme_c.py", "fingerprints": [["Acme", "C-1"]], "claimed_elsewhere": [], "vendor": "Acme", "model": "C-1", "status": "generated", "path": "zcl"},
+    # Verified: offered whatever its risk.
+    "acme_b": {"file": "quirks/z2m_acme_b.py", "fingerprints": [[None, "B-1"]], "claimed_elsewhere": [["Other", "B-1"]], "vendor": "Acme", "model": "B-1", "status": "verified", "path": "zcl",
+               "risk": "high", "risk_why": ["cover"]},
+    "acme_c": {"file": "quirks/z2m_acme_c.py", "fingerprints": [["Acme", "C-1"]], "claimed_elsewhere": [], "vendor": "Acme", "model": "C-1", "status": "generated", "path": "zcl",
+               "risk": "low", "risk_why": []},
     "acme_d": {"file": None, "fingerprints": [["Acme", "D-1"]], "vendor": "Acme", "model": "D-1", "status": "generated", "path": "zcl", "not_built": "endpoint unclear"},
 }
 

@@ -13,10 +13,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Geräte, die xquirks in Ruhe lässt",
-        "description": "xquirks installiert keine Datei nur für diese Geräte. Dateien, die nur sie verwenden, gehen mit der nächsten Änderungsliste. Eine Datei, die ein anderes Gerät braucht, wird trotzdem installiert oder bleibt: ZHA wendet sie auch auf diese Geräte an (die Änderungsliste nennt sie).\n\nIn Home Assistant deaktivierte Geräte lässt xquirks genauso in Ruhe.",
+        "title": "Was xquirks anbietet",
+        "description": "**Geräte**: xquirks installiert keine Datei nur für diese Geräte. Dateien, die nur sie verwenden, gehen mit der nächsten Änderungsliste. Eine Datei, die ein anderes Gerät braucht, wird trotzdem installiert oder bleibt: ZHA wendet sie auch auf diese Geräte an (die Änderungsliste nennt sie).\n\nIn Home Assistant deaktivierte Geräte lässt xquirks genauso in Ruhe.\n\n**Dateien mit hohem Risiko anbieten**: Dateien für Rollläden und Thermostate, Dateien, die ZHAs eigenen Quirk ersetzen, und Dateien mit einer bekannten Schwachstelle hält xquirks zurück, bis sie an einem Gerät geprüft sind. Schalte das ein, um sie trotzdem in der Änderungsliste zu bekommen, mit ihrem Risiko markiert.",
         "data": {
-          "excluded": "Geräte"
+          "excluded": "Geräte",
+          "high_risk": "Dateien mit hohem Risiko anbieten"
         }
       }
     }
@@ -67,6 +68,10 @@
     "blocked": {
       "title": "{quirk} läuft mit einem anderen eigenen Quirk",
       "description": "{picture}{devices}\n\nxquirks hat `{file}` dafür ({status}), schreibt die Datei aber nicht, solange ein eigener Quirk von dir das Gerät übernimmt: ZHA würde eine der beiden wählen. Zum Wechseln entferne deine Quirk-Datei und lade ZHA neu. Danach bringt die Änderungsliste `{file}`."
+    },
+    "held_back": {
+      "title": "Quirk mit hohem Risiko zurückgehalten: {quirk}",
+      "description": "{picture}{devices}\n\nxquirks hat `{file}` dafür ({status}), hält die Datei aber zurück, bis sie an einem Gerät geprüft ist. {reasons}\n\nUm sie trotzdem zu bekommen, schalte **Dateien mit hohem Risiko anbieten** unter Einstellungen > Geräte & Dienste > xquirks > Konfigurieren ein. Die nächste Änderungsliste bietet sie dann an."
     },
     "users_file": {
       "title": "Deine Datei trägt den Namen eines Quirks: {quirk}",

@@ -47,6 +47,7 @@ from .const import (
     CHECK_INTERVAL,
     CONF_CUSTOM_QUIRKS_PATH,
     CONF_EXCLUDED,
+    CONF_HIGH_RISK,
     CONTENT_STORAGE_KEY,
     CONTENT_STORAGE_VERSION,
     DOMAIN,
@@ -744,6 +745,7 @@ class QuirkManager:
             withdrawn=self.withdrawn,
             verdicts=_Verdicts(self),
             excluded=frozenset(self.entry.options.get(CONF_EXCLUDED, ())),
+            offer_high_risk=bool(self.entry.options.get(CONF_HIGH_RISK, False)),
         )
 
     async def async_refresh(self) -> None:
@@ -911,7 +913,7 @@ class QuirkManager:
     def _named_files(self) -> set[str]:
         """The files whose device a notice names."""
         plan = self.plan
-        names = {item.name for items in (plan.blocked, plan.not_applied, plan.misfits) for item in items}
+        names = {item.name for items in (plan.blocked, plan.held_back, plan.not_applied, plan.misfits) for item in items}
         names |= {os.path.basename(path) for path in plan.changed} | {os.path.basename(path) for path, _rev in plan.withdrawn_installed}
         return names | set(plan.users_files) | set(plan.withdrawn_copies)
 
@@ -946,6 +948,18 @@ class QuirkManager:
                 "picture": self.picture(blocked.name),
             }
             wanted[key] = ("blocked", False, placeholders, {})
+        for item in plan.held_back:
+            # Ignorable like the notice above: the user may leave the file out for good.
+            entry = self._entry(item.name)
+            placeholders = {
+                **text.offer_title(entry, len(item.devices)),
+                "file": item.name,
+                "devices": text.device_list(item.devices, devices, plan.ours),
+                "status": text.status(entry),
+                "reasons": text.reasons(entry),
+                "picture": self.picture(item.name),
+            }
+            wanted[f"held_back_{stem(item.name)}_{_digest(*item.devices)}"] = ("held_back", False, placeholders, {"file": item.name})
         for name in plan.users_files:
             sha = self._present.get(name) or ""
             placeholders = {"file": name, "quirk": self._quirk(name), "folder": self.folder or "", "picture": self.picture(name)}
@@ -1420,6 +1434,7 @@ class QuirkManager:
             "zha_quirks_known": self.zha_state == ZHA_LOADED,
             "unknown_quirk_devices": sorted(f"{d.manufacturer} {d.model}" for d in self.devices.values() if d.quirk is None),
             "devices_left_alone": len(self.entry.options.get(CONF_EXCLUDED, ())),
+            "offer_high_risk": bool(self.entry.options.get(CONF_HIGH_RISK, False)),
             "installed": installed,
             "change_list": {
                 "held": plan.held,
@@ -1430,6 +1445,9 @@ class QuirkManager:
             },
             "target": sorted(plan.target),
             "devices_on_other_custom_quirks": other,
+            # High-risk files not verified on a device, held back from the devices that need them (no device names).
+            "held_back_high_risk": {h.name: sorted(f"{self.devices[i].manufacturer} {self.devices[i].model}" for i in h.devices if i in self.devices)
+                                    for h in plan.held_back},
             # Shipped files whose endpoints a device does not fit, with why (no device names).
             "devices_that_do_not_fit": {m.name: sorted(f"{self.devices[i].manufacturer} {self.devices[i].model}: {why}" for i, why in m.devices if i in self.devices)
                                         for m in plan.misfits},

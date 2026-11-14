@@ -13,10 +13,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Devices xquirks leaves alone",
-        "description": "xquirks installs no file just for these devices. Files only they use go with the next change list. A file another device needs is installed or kept anyway: ZHA applies it to these devices too (the change list names them).\n\nDevices disabled in Home Assistant are left alone the same way.",
+        "title": "What xquirks offers",
+        "description": "**Devices**: xquirks installs no file just for these devices. Files only they use go with the next change list. A file another device needs is installed or kept anyway: ZHA applies it to these devices too (the change list names them).\n\nDevices disabled in Home Assistant are left alone the same way.\n\n**Offer high-risk files**: xquirks holds back files for covers and thermostats, files that replace ZHA's own quirk and files with a known weak spot until they are verified on a device. Turn this on to get them in the change list anyway, marked with their risk.",
         "data": {
-          "excluded": "Devices"
+          "excluded": "Devices",
+          "high_risk": "Offer high-risk files"
         }
       }
     }
@@ -67,6 +68,10 @@
     "blocked": {
       "title": "{quirk} runs on another custom quirk",
       "description": "{picture}{devices}\n\nxquirks has `{file}` for it ({status}) but does not write it while a custom quirk of yours handles the device: ZHA would pick one of the two. To switch, remove your quirk file and reload ZHA. The change list then brings `{file}`."
+    },
+    "held_back": {
+      "title": "High-risk quirk held back: {quirk}",
+      "description": "{picture}{devices}\n\nxquirks has `{file}` for it ({status}) but holds it back until it is verified on a device. {reasons}\n\nTo get it anyway, turn on **Offer high-risk files** under Settings > Devices & services > xquirks > Configure. The next change list then offers it."
     },
     "users_file": {
       "title": "Your file has the name of a quirk: {quirk}",

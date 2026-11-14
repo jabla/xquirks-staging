@@ -12,6 +12,8 @@ import json
 import random
 from types import SimpleNamespace
 
+import pytest
+
 from . import integration
 
 plan_module = integration.plan
@@ -31,7 +33,8 @@ def rev(name: str, version: int) -> str:
 
 
 def state(**files: dict) -> content.ContentState:
-    """A content state: file name stem -> {"fingerprints", "claimed_elsewhere", "version", "over_zha", "swap"}."""
+    """A content state: file name stem -> {"fingerprints", "claimed_elsewhere", "version", "over_zha", "swap", "endpoints", "status", "risk"}
+    (generated, low risk unless the spec says otherwise)."""
     manifest, shas, revisions = {}, {}, {}
     for stem, spec in files.items():
         name, version = f"z2m_{stem}.py", spec.get("version", 2)
@@ -42,8 +45,9 @@ def state(**files: dict) -> content.ContentState:
             "status": "generated",
             "vendor": "V",
             "model": stem,
+            "risk": "low",
         }
-        for key in ("over_zha", "swap", "endpoints"):
+        for key in ("over_zha", "swap", "endpoints", "status", "risk"):
             if key in spec:
                 manifest[stem][key] = spec[key]
         shas[name], revisions[name] = sha(name, version), rev(name, version)
@@ -873,3 +877,121 @@ def test_a_file_that_does_not_take_a_name_over_is_no_file_for_its_device():
     plan = plan_for(st, devices, records, withdrawn={("z2m_t.py", rev("z2m_t.py", 1))})
     (removal,) = plan.remove
     assert removal.reason == "withdrawn" and [(item.device, item.reason, item.back) for item in removal.lost] == [("d1", plan_module.FILE_NO_TAKE_OVER, True)]
+
+
+# A high-risk file that is not verified: held back while the options do not offer such files.
+HIGH = {**A, "risk": "high"}
+
+
+def held_back(plan) -> list:
+    return [(item.name, item.devices) for item in plan.held_back]
+
+
+def test_a_high_risk_file_is_held_back_with_a_notice_and_not_downloaded():
+    st = state(a=HIGH, b=B)
+    devices = {"d1": dev("Acme", "A-1", name="Hall"), "d2": dev("Acme", "B-1")}
+    # Not checked by the guard: a held-back file holds no list while it waits for a download.
+    plan = plan_for(st, devices, verdicts={"z2m_a.py": None})
+    assert plan.held is None and plan.unchecked == []
+    assert kinds(plan) == {"install": [("z2m_b.py", ("d2",))], "update": [], "remove": []}
+    assert held_back(plan) == [("z2m_a.py", ("d1",))] and plan.target == {"z2m_b.py"}
+
+
+def test_the_options_offer_high_risk_files():
+    plan = plan_for(state(a=HIGH), {"d1": dev("Acme", "A-1")}, offer_high_risk=True)
+    assert kinds(plan)["install"] == [("z2m_a.py", ("d1",))] and plan.held_back == []
+
+
+@pytest.mark.parametrize(
+    ("spec", "held"),
+    [
+        ({"risk": "high"}, True),
+        # Missing or unknown: high.
+        ({"risk": None}, True),
+        ({"risk": "severe"}, True),
+        ({"risk": "medium"}, False),
+        ({"risk": "low"}, False),
+        # Verified: checked, whatever its risk.
+        ({"risk": "high", "status": "verified"}, False),
+    ],
+)
+def test_only_high_risk_files_that_are_not_verified_are_held_back(spec: dict, held: bool):
+    st = state(a={**A, **spec})
+    if spec.get("risk", "") is None:
+        del st.manifest["a"]["risk"]
+    plan = plan_for(st, {"d1": dev("Acme", "A-1")})
+    assert bool(plan.held_back) is held and bool(plan.install) is not held
+
+
+def test_a_file_of_ours_is_never_held_back():
+    """The devices that run it get its updates whatever its risk; a device paired since gets it too."""
+    st = state(a=HIGH)
+    records = {path("a"): record("a", [("Acme", "A-1")])}
+    devices = {"d1": dev("Acme", "A-1", quirk="z2m_a"), "d2": dev("Acme", "A-1")}
+    plan = plan_for(st, devices, records)
+    assert kinds(plan) == {"install": [], "update": [("z2m_a.py", ("d1", "d2"))], "remove": []} and plan.held_back == []
+    # At the offered version already: nothing to do, no notice.
+    plan = plan_for(st, devices, {path("a"): record("a", [("Acme", "A-1")], version=2)})
+    assert plan.changes == 0 and plan.held_back == [] and plan.target == {"z2m_a.py"}
+    # One in a folder ZHA loaded before moves to the folder it loads now.
+    plan = plan_for(st, {"d1": dev("Acme", "A-1")}, {path("a", "/config/old"): record("a", [("Acme", "A-1")])})
+    assert kinds(plan) == {"install": [("z2m_a.py", ("d1",))], "update": [], "remove": [("z2m_a.py", plan_module.OUTSIDE)]}
+
+
+def test_a_name_that_moves_to_a_held_back_file_stays_with_the_file_of_ours():
+    """The data moved Acme / B-1 to a high-risk file: the file of ours keeps the device while the state no
+    longer ships it, an update that drops the name names the device as getting none."""
+    devices = {"d1": dev("Acme", "A-1", quirk="z2m_a"), "d2": dev("Acme", "B-1", quirk="z2m_a")}
+    records = {path("a"): record("a", [("Acme", "A-1"), ("Acme", "B-1")])}
+    plan = plan_for(state(b={**B, "risk": "high"}), devices, records)
+    assert plan.changes == 0 and held_back(plan) == [("z2m_b.py", ("d2",))]
+    plan = plan_for(state(a=A, b={**B, "risk": "high"}), devices, records)
+    assert kinds(plan) == {"install": [], "update": [("z2m_a.py", ("d1",))], "remove": []}
+    assert plan.update[0].moves == () and plan.update[0].lost == (plan_module.Lost("d2", plan_module.FILE_HELD_BACK, "z2m_b.py"),)
+    assert held_back(plan) == [("z2m_b.py", ("d2",))]
+    text = integration.text.change_list(plan, devices, lambda n: n, {}, {})
+    assert "Acme B-1 gets no file from xquirks: `z2m_b.py` is held back until it is verified on a device (see its notice)" in text
+
+
+def test_no_notice_promises_a_held_back_file():
+    """The notices that say the change list brings the file once the user's file or quirk is gone
+    leave a held-back file out: the list would not bring it."""
+    st = state(a=HIGH)
+    plan = plan_for(st, {"d1": dev("Acme", "A-1")}, present={"z2m_a.py": "f" * 64})
+    assert plan.users_files == [] and plan.held_back == [] and plan.changes == 0
+    plan = plan_for(st, {"d1": dev("Acme", "A-1", quirk="my_quirk")})
+    assert plan.blocked == [] and plan.held_back == []
+    # Nor one that could not come anyway.
+    assert plan_for(st, {"d1": dev("Acme", "A-1")}, withdrawn={("z2m_a.py", rev("z2m_a.py", 2))}).held_back == []
+    assert plan_for(state(a=HIGH, c=A), {"d1": dev("Acme", "A-1")}).held_back == []
+
+
+def test_a_held_back_take_over_leaves_the_device_on_zhas_quirk():
+    st = state(t={**TAKE, "risk": "high"})
+    plan = plan_for(st, {"d1": dev("Acme", "T-1", quirk=ZHAS)})
+    assert plan.changes == 0 and held_back(plan) == [("z2m_t.py", ("d1",))]
+    # Offered: the take-over as before.
+    plan = plan_for(st, {"d1": dev("Acme", "T-1", quirk=ZHAS)}, offer_high_risk=True)
+    assert kinds(plan)["install"] == [("z2m_t.py", ("d1",))] and plan.install[0].took_over == ("d1",)
+
+
+def test_a_held_back_file_still_gets_its_misfit_notices():
+    """A device that does not fit gets the notice with its report link either way: the next version can
+    fit it. The held-back notice names the devices that fit."""
+    st = state(f={**FIT, "risk": "high"})
+    plan = plan_for(st, {"d1": dev("Acme", "F-1", layout=WRONG), "d2": dev("Acme", "F-1", layout=FITS)})
+    assert plan.changes == 0 and held_back(plan) == [("z2m_f.py", ("d2",))]
+    assert [(m.name, m.devices) for m in plan.misfits] == [("z2m_f.py", (("d1", "it has no endpoint 3"),))]
+
+
+def test_a_dropped_take_over_file_is_handed_back_while_its_successor_is_held_back():
+    """The state drops z2m_t.py and gives its device to a high-risk file: the hand-back does not wait
+    for it, ZHA's quirk takes the device back and the notice names the file held back."""
+    st = state(u={"fingerprints": [("Acme", "T-1")], "risk": "high"})
+    devices = {"d1": dev("Acme", "T-1", quirk="z2m_t")}
+    plan = plan_for(st, devices, {path("t"): taken("t", TAKE["fingerprints"])})
+    assert kinds(plan) == {"install": [], "update": [], "remove": [("z2m_t.py", plan_module.HANDED_BACK)]}
+    assert plan.remove[0].lost == () and held_back(plan) == [("z2m_u.py", ("d1",))]
+    # Offered: the device moves to it instead.
+    plan = plan_for(st, devices, {path("t"): taken("t", TAKE["fingerprints"])}, offer_high_risk=True)
+    assert kinds(plan) == {"install": [("z2m_u.py", ("d1",))], "update": [], "remove": [("z2m_t.py", plan_module.MOVED)]}

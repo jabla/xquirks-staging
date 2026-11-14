@@ -45,7 +45,14 @@ not. The checks look at the outcome only, never at why the plan decided:
   them does not fit (not left out, not on a custom quirk of the user, not on ZHA's own quirk the
   file does not take over); the "ZHA does not apply it" notice names none of them;
 - I14: a device the plan sees as running a file of ours that does not fit the offered version of the
-  one file claiming it, left without a file by the list, is named with reason FILE_MISFIT.
+  one file claiming it, left without a file by the list, is named with reason FILE_MISFIT;
+- I15: no list installs a held-back file (high risk, not verified, high-risk files not offered, no
+  file of ours under its name); each device that needs a held-back file it could get otherwise is
+  named in that file's notice, and the notices name held-back files only. A file of ours is never
+  held back: I4 holds for it like for any other.
+
+Risk: an offered version may be high risk (not verified); the options may offer high-risk files.
+Drawn from a stream of their own: the other facts of each scenario stay what they were before.
 
 Endpoints: a version may name the endpoints it puts clusters on (its ENDPOINTS, in the manifest
 entry of the offered version); ZHA skips such a version for a device that does not fit them (the
@@ -159,6 +166,9 @@ class Scenario:
     # Names not shipped that have an entry without a file (it says ZHA covers the device, or no
     # file could be built): name -> the manifest entry.
     fileless: dict[str, dict] = dataclasses.field(default_factory=dict)
+    # Offered names whose version is high risk and not verified; whether the options offer them.
+    high: frozenset[str] = frozenset()
+    offer_high: bool = False
 
     def copy(self, **changes) -> Scenario:
         return dataclasses.replace(self, **changes)
@@ -256,6 +266,7 @@ def inputs(scenario: Scenario, reported: dict[str, str | None]) -> tuple[tuple, 
             "status": "generated",
             "vendor": "V",
             "model": stem(name),
+            "risk": "high" if name in scenario.high else "low",
             **({"over_zha": {"adds": ["x"], "zha_only": []}} if v.over_zha else {}),
             **({"endpoints": {str(ep): list(clusters) for ep, clusters in v.endpoints}} if v.endpoints is not None else {}),
         }
@@ -284,7 +295,7 @@ def inputs(scenario: Scenario, reported: dict[str, str | None]) -> tuple[tuple, 
     verdicts = {name: {OK: (), REFUSED: ("refused",), UNCHECKED: None}[v] for name, v in scenario.verdict.items()}
     excluded = frozenset(i for i, f in scenario.devices.items() if f.excluded)
     args = (state, devices, dict(scenario.records), disk, FOLDER, present)
-    return args, {"generated": generated, "withdrawn": scenario.withdrawn, "verdicts": verdicts, "excluded": excluded}
+    return args, {"generated": generated, "withdrawn": scenario.withdrawn, "verdicts": verdicts, "excluded": excluded, "offer_high_risk": scenario.offer_high}
 
 
 def plan_of(scenario: Scenario, reported: dict[str, str | None], module=plan_module):
@@ -294,6 +305,13 @@ def plan_of(scenario: Scenario, reported: dict[str, str | None], module=plan_mod
 
 def writable(scenario: Scenario, name: str) -> bool:
     return name in scenario.offered and scenario.verdict[name] == OK and (name, scenario.offered[name].revision) not in scenario.withdrawn
+
+
+def held(scenario: Scenario, name: str) -> bool:
+    """The offered file is held back: high risk, not offered in the options and no file of ours has
+    its name, neither in the folder nor in the one ZHA loaded before."""
+    outside = {os.path.basename(path) for path, sha in scenario.outside.items() if scenario.records.get(path, {}).get("sha256") == sha}
+    return name in scenario.high and not scenario.offer_high and name not in ours(scenario) and name not in outside
 
 
 def housekeeping(scenario: Scenario, plan) -> Scenario:
@@ -335,6 +353,8 @@ def apply(scenario: Scenario, plan, problems: list[str], fail: int | None = None
             problems.append(f"I3 install of {name} over a file in the folder")
         if kind in ("update", "install") and not writable(scenario, name):
             problems.append(f"I3 {kind} of {name}, which may not be written")
+        if kind == "install" and held(scenario, name):
+            problems.append(f"I15 install of {name}, which is held back")
         if fail == index:
             if crash and kind == "update":
                 records[path] = {**written(name), "previous": records[path]}
@@ -549,12 +569,20 @@ def check(scenario: Scenario, module=plan_module, fail: int | None = None, crash
         def conflicted(name: str) -> bool:
             return any(len(owners[i]) > 1 and name in owners[i] for i in pairs)
 
+        def could_come(name: str) -> bool:
+            """Nothing but its risk or the guard keeps the file out: its revision is not withdrawn, no file
+            of the user has its name, it claims no device of the user's quirk anew, no other file claims
+            its devices."""
+            users_file = (f := base.folder.get(name)) is not None and f.owner != OURS
+            return (name, scenario.offered[name].revision) not in scenario.withdrawn and not users_file and not blocked(name) and not conflicted(name)
+
         def can_have(name: str) -> bool:
             """The file may be written (or is there at the offered version) and nothing keeps it out."""
             at_offer = before_ours.get(name) == scenario.offered[name]
-            fine = (name, scenario.offered[name].revision) not in scenario.withdrawn and (at_offer or scenario.verdict[name] == OK)
-            held = (f := base.folder.get(name)) is not None and f.owner != OURS
-            return fine and not held and not blocked(name) and not conflicted(name)
+            return could_come(name) and (at_offer or scenario.verdict[name] == OK) and not held(base, name)
+
+        # I15: the devices that need a held-back file that could come otherwise.
+        waiting = set()
 
         # I4
         for i in pairs:
@@ -571,10 +599,17 @@ def check(scenario: Scenario, module=plan_module, fail: int | None = None, crash
             else:
                 taken = applied[i] == "zhaquirks.shipped" and takes(scenario.offered[name], pairs[i])
                 needed = not stale(i) and (applied[i] == "" or bool(ran(i)) or taken)
+            if needed and held(base, name) and could_come(name):
+                waiting.add((name, i))
             if not needed or not can_have(name):
                 continue
             if name not in runs_after(i) and not user_won(i):
                 problems.append(f"I4 {i} needs {name}, runs {after_applied[i]!r}")
+        noticed = {(item.name, i) for item in plan.held_back for i in item.devices}
+        if missing := sorted(waiting - noticed):
+            problems.append(f"I15 devices that need a held-back file not named in its notice: {missing}")
+        if wrong := sorted({item.name for item in plan.held_back if not held(base, item.name)}):
+            problems.append(f"I15 notices for files that are not held back: {wrong}")
 
         # I5
         for i in pairs:
@@ -658,10 +693,12 @@ def random_names(rng: random.Random, pool: list[tuple[str, str]]) -> tuple[tuple
     return tuple(sorted(names, key=str))
 
 
-def random_scenario(rng: random.Random, fit_rng: random.Random | None = None) -> Scenario:
-    """fit_rng draws the endpoints of versions and the layouts of devices: a stream of its own, so the
-    other facts of each scenario stay what they were before endpoints came in."""
+def random_scenario(rng: random.Random, fit_rng: random.Random | None = None, risk_rng: random.Random | None = None) -> Scenario:
+    """fit_rng draws the endpoints of versions and the layouts of devices, risk_rng the risk of the
+    offered versions and the option: streams of their own, so the other facts of each scenario stay
+    what they were before endpoints and risks came in."""
     fit_rng = fit_rng or random.Random(16)
+    risk_rng = risk_rng or random.Random(26)
     pool = [(m, x) for m in MAKERS for x in MODELS]
     pairs = [rng.choice(pool) for _ in IDS]
     if rng.random() < 0.3:
@@ -755,7 +792,8 @@ def random_scenario(rng: random.Random, fit_rng: random.Random | None = None) ->
         else:
             names = {"fingerprints": [list(n) for n in older[name].names], "claimed_elsewhere": [list(n) for n in older[name].claimed_elsewhere]}
             fileless[name] = {"file": None, **names, "status": "generated", "not_built": "no file could be built"}
-    return Scenario(offered, verdict, frozenset(withdrawn), folder, records, outside, devices, tuple(order), fileless)
+    high = frozenset(name for name in sorted(offered) if risk_rng.random() < 0.3)
+    return Scenario(offered, verdict, frozenset(withdrawn), folder, records, outside, devices, tuple(order), fileless, high, risk_rng.random() < 0.25)
 
 
 def failures(scenario: Scenario, rng: random.Random, module=plan_module) -> list[tuple[int | None, bool]]:
@@ -785,10 +823,10 @@ def without_endpoints(scenario: Scenario) -> Scenario:
 def search(scenarios: int, module=plan_module, stop_at_first: bool = False) -> list[tuple[Scenario, list[str]]]:
     """Each scenario twice: without endpoints (what the checker searched before they came in, a
     misfit hides no other bug there) and with them; each with its own stream for the failing step."""
-    rng, fit_rng = random.Random(6), random.Random(16)
+    rng, fit_rng, risk_rng = random.Random(6), random.Random(16), random.Random(26)
     found = []
     for _ in range(scenarios):
-        scenario = random_scenario(rng, fit_rng)
+        scenario = random_scenario(rng, fit_rng, risk_rng)
         for variant, draws in ((without_endpoints(scenario), rng), (scenario, fit_rng)):
             for fail, crash in failures(variant, draws, module):
                 if problems := check(variant, module, fail, crash):
@@ -841,6 +879,10 @@ BUGS = [
     ("the ZHA-does-not-apply notice names devices that do not fit", "if not left_out(i) and misfit_of(i, name) is None\n                               and (kind", "if not left_out(i)\n                               and (kind"),
     ("misfit notices for devices on the user's quirk", "or left_out(device_id) or kind[device_id] == CUSTOM:", "or left_out(device_id):"),
     ("no FILE_MISFIT reason", "if misfit_of(device_id, other) is not None:\n                found.append(Lost(device_id, FILE_MISFIT", "if False:\n                found.append(Lost(device_id, FILE_MISFIT"),
+    ("no hold-back", "return not offer_high_risk and name not in names_of_ours", "return False and name not in names_of_ours"),
+    ("installed files held back too", "and name not in names_of_ours and high_risk(", "and high_risk("),
+    ("no held-back notice", "plan.held_back.append(HeldBack(name, needing[name]))", "pass"),
+    ("held-back notices without the devices that need them", "plan.held_back.append(HeldBack(name, needing[name]))", "plan.held_back.append(HeldBack(name, ()))"),
     (
         "a hand-back only without an entry or with one that says ZHA covers the device (the rule before the exact coupling)",
         "if users_of and name not in slugs and all(",

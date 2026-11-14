@@ -1,4 +1,5 @@
-"""The risk of a file that is not verified on a device: how the change list names it."""
+"""The risk of a file that is not verified on a device: how the change list names it, and the high-risk
+files held back until the options offer them."""
 
 from __future__ import annotations
 
@@ -6,10 +7,12 @@ from pathlib import Path
 
 import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import issue_registry as ir
 
-from .conftest import MANIFEST, REPOS, Zha, apply_list, issue_of, listed, setup_entry, start_fix, write_repo
-from .integration import content, text
+from .conftest import MANIFEST, REPOS, STRINGS, Zha, apply_list, issue_of, issues_of, listed, quirk_text, render, setup_entry, start_fix, write_repo
+from .integration import DOMAIN, const, content, text
 from .integration import plan as plans
+from .test_content import requested
 
 IEEE_A = "00:11:22:33:44:55:66:01"
 NOTHING = {"remove": [], "update": [], "install": []}
@@ -110,3 +113,63 @@ async def test_the_dialog_names_the_risk_and_an_update_that_raises_it(hass: Home
     flow = await start_fix(hass, issue_of(hass, "changes"))
     lines = flow["description_placeholders"]["changes"].splitlines()
     assert lines[1] == "    - risk now high. It changes number settings. The device may accept a smaller range. One of its settings changes how another value reads."
+
+
+# Held back while the options do not offer high-risk files.
+
+
+def high_risk(repo_dir: Path, version: int = 1, **fields) -> None:
+    """The working tree with z2m_tuya_a.py at high risk."""
+    write_repo(repo_dir, {**MANIFEST, "tuya_a": {**MANIFEST["tuya_a"], "risk": "high", "risk_why": ["cover", "number_settings"], **fields}}, version=version)
+
+
+async def test_a_held_back_file_gets_an_ignorable_notice_and_is_not_downloaded(hass: HomeAssistant, zha: Zha, repo_dir: Path, quirks_dir: Path, aioclient_mock):
+    high_risk(repo_dir)
+    zha.add_device(IEEE_A, "_TZE200_aaaa", "TS0601", "Radar")
+    entry = await setup_entry(hass, repo_dir)
+    assert listed(hass) == NOTHING and list(quirks_dir.iterdir()) == []
+    notice = issue_of(hass, "held_back", "z2m_tuya_a.py")
+    assert not notice.is_fixable and notice.severity is ir.IssueSeverity.WARNING
+    placeholders = notice.translation_placeholders
+    assert render(STRINGS["issues"]["held_back"]["title"], placeholders) == "High-risk quirk held back: Tuya A"
+    assert render(STRINGS["issues"]["held_back"]["description"], placeholders) == (
+        "- Radar (\\_TZE200\\_aaaa TS0601), runs no quirk\n\n"
+        "xquirks has `z2m_tuya_a.py` for it (generated, not verified on a device yet) but holds it back until it is verified on a device."
+        " It controls a cover. It changes number settings. The device may accept a smaller range.\n\n"
+        "To get it anyway, turn on **Offer high-risk files** under Settings > Devices & services > xquirks > Configure. The next change list then offers it."
+    )
+    assert requested(aioclient_mock, "/quirks/z2m_tuya_a.py") == 0
+    summary = entry.runtime_data.summary()
+    assert summary["held_back_high_risk"] == {"z2m_tuya_a.py": ["_TZE200_aaaa TS0601"]} and summary["offer_high_risk"] is False
+    assert "Radar" not in str(summary["held_back_high_risk"])
+
+    # Ignored, it stays ignored while the same devices need the file.
+    ir.async_ignore_issue(hass, DOMAIN, notice.issue_id, True)
+    await entry.runtime_data.async_refresh()
+    assert issues_of(hass, "held_back") == []
+    # Turned on: the change list offers it, marked with its risk, the notice goes.
+    hass.config_entries.async_update_entry(entry, options={const.CONF_HIGH_RISK: True})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert listed(hass) == {**NOTHING, "install": ["z2m_tuya_a.py"]}
+    assert ir.async_get(hass).async_get_issue(DOMAIN, notice.issue_id) is None
+    flow = await start_fix(hass, issue_of(hass, "changes"))
+    assert "Risk: high. It controls a cover. It changes number settings. The device may accept a smaller range. Test it before you rely on it." in flow["description_placeholders"]["changes"]
+    assert entry.runtime_data.summary()["held_back_high_risk"] == {}
+
+
+async def test_an_installed_high_risk_file_gets_its_updates(hass: HomeAssistant, zha: Zha, repo_dir: Path, quirks_dir: Path):
+    """Installed while offered (or before its risk rose): the option turned off again holds back no update."""
+    high_risk(repo_dir)
+    zha.add_device(IEEE_A, "_TZE200_aaaa", "TS0601", "Radar")
+    entry = await setup_entry(hass, repo_dir, options={const.CONF_HIGH_RISK: True})
+    await apply_list(hass)
+    zha.reload({IEEE_A: "z2m_tuya_a:TuyaA"})
+    hass.config_entries.async_update_entry(entry, options={const.CONF_HIGH_RISK: False})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert listed(hass) == NOTHING and issues_of(hass, "held_back") == []
+    high_risk(repo_dir, version=2)
+    REPOS[repo_dir].publish()
+    await entry.runtime_data.async_check()
+    assert listed(hass) == {**NOTHING, "update": ["z2m_tuya_a.py"]} and issues_of(hass, "held_back") == []
+    await apply_list(hass)
+    assert (quirks_dir / "z2m_tuya_a.py").read_bytes() == quirk_text("tuya_a", 2)
