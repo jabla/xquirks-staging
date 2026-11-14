@@ -5,8 +5,8 @@ ZHA ships a quirk for _TZE204_1youk3hj / TS0601 that decodes DP 102 differently,
 test confirmed z2m (data/known-conflicts.toml: neo-nas-ps10b2-dp102). These names get their own
 quirk instead of an alias; once a quirk shipped with ZHA matches them, this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
-Status: generated, not verified on hardware.
-Revision: 213fd5eb
+Status: verified on hardware.
+Revision: b67e6866
 """
 
 import functools

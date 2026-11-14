@@ -17164,17 +17164,17 @@
   "path": "tuya",
   "picture": "NAS-PS10B2.png",
   "picture_sha256": "ea971e6721d6bbcb3cbaab4d6034d23379f9d60424e17d80a075da9423d3c324",
-  "revision": "213fd5eb",
+  "revision": "b67e6866",
   "risk": "medium",
   "risk_why": [
    "number_settings"
   ],
-  "sha256": "e64deca6b421c9b9792f942be9c4dd5ec888e2f5d80545d5ee853f111d9e3d49",
+  "sha256": "e053c5bbcdfce71628940739fa01a79a19f5bd30f2619c3081ce2cf1aaa71b6e",
   "sources": {
    "zha-device-handlers": "2.4.1",
    "zigbee-herdsman-converters": "26.130.0"
   },
-  "status": "generated",
+  "status": "verified",
   "upstream_open_prs": [
    {
     "author": "zer777",
