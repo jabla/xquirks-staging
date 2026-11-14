@@ -560,3 +560,14 @@ def test_pages_deploys_the_site_as_it_is():
     for step in steps:
         if step.get("uses", "").startswith("actions/checkout@"):
             assert step["with"]["persist-credentials"] is False
+
+
+def test_the_docs_name_the_risks_and_the_filter_the_finder_has():
+    """README names the three risks in their order, CONTRIBUTING the finder's "Show" option for high risk."""
+    readme = re.sub(r"\s+", " ", (ROOT / "README.md").read_text())
+    named = re.search(r"A file that is not verified also names its risk: (\w+) \(.*?\), (\w+) \(.*?\) or (\w+) \(", readme)
+    assert named and named.groups() == content.RISKS
+    assert "The integration offers high-risk files only when you turn them on in its options." in readme
+    contributing = re.sub(r"\s+", " ", (ROOT / "CONTRIBUTING.md").read_text())
+    label = re.search(r'the finder lists these files under "([^"]+)"', contributing)[1]
+    assert f'<option value="high">{label}</option>' in PAGE

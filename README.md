@@ -29,6 +29,11 @@ Each quirk file names its status in its docstring:
 - verified: checked on the device with the probe
 - upstream: zha-device-handlers covers the device, the file is no longer shipped
 
+A file that is not verified also names its risk: low (readings and simple controls), medium (number
+settings the device may limit differently) or high (covers, thermostats, files that replace ZHA's own
+quirk, files with a known weak spot). The integration offers high-risk files only when you turn them
+on in its options.
+
 ## Install from the Marketplace
 
 Needs Home Assistant with ZHA, at least the release named in [`hacs.json`](hacs.json).

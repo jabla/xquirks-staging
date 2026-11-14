@@ -37,6 +37,8 @@ another option, reads it back and sets it back. It never writes a switch, button
 Tick the boxes in `probe-report/report.md` that match the device, then attach it with
 `probe-report/diagnostics.json` to the "Device test" form.
 
+A test of a high-risk file helps most: the finder lists these files under "High risk".
+
 ## A file that does not fit your device
 
 When a quirk does not fit your device, the integration says so in a notice. It links the "Device
