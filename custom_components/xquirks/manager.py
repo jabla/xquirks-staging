@@ -487,9 +487,9 @@ class QuirkManager:
                     self.state, self.newer_withdrawn = found
                     await self._async_refresh()
                 return
-        if self.state is None:
-            # Without a state, the notice says why after every check.
-            await self.async_refresh()
+        # No newer state: the folder and the devices are read all the same, so a file edited or
+        # deleted by hand shows after the check (and without a state, the notice says why).
+        await self.async_refresh()
 
     def _kept_tags(self) -> remote.Tags | None:
         """The tag list as the last check found it, with its ETag; None when none is kept."""
