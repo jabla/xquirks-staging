@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: b85630e4
+Revision: 13d6c8b6
 """
 
 import functools
@@ -129,6 +129,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to(None, 'AY-204ZX')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=102, type=t.uint32_t, attribute_name='fading_time', min_value=10, max_value=28800, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='fading_time', fallback_name='Fading time')
     .tuya_number(dp_id=4, type=t.uint32_t, attribute_name='detection_distance', min_value=0, max_value=5, step=0.01, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='detection_distance', fallback_name='Detection distance')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='static_detection_sensitivity', min_value=0, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='static_detection_sensitivity', fallback_name='Static detection sensitivity')

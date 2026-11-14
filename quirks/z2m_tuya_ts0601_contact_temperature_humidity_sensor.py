@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 5ea8e885
+Revision: f3848888
 """
 
 import functools
@@ -12,14 +12,11 @@ import pathlib
 
 import zhaquirks
 from zha.quirks import DEVICE_REGISTRY, DeviceMatch
-import zigpy.types as t
-from zigpy.zcl import foundation
 
 from zhaquirks.builder import (
     BinarySensorDeviceClass,
     EntityType,
 )
-from zhaquirks.tuya import TUYA_CLUSTER_ID
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
 
 
@@ -122,8 +119,7 @@ def no_builtin_quirk(device) -> bool:
 (
     TuyaQuirkBuilder()
     .applies_to('_TZE200_nvups4nh', 'TS0601')
-    .tuya_dp_attribute(dp_id=1, attribute_name='contact', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: not x)
-    .binary_sensor(attribute_name='contact', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.OPENING, translation_key='contact', fallback_name='Contact')
+    .tuya_binary_sensor(dp_id=1, attribute_name='contact', entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.OPENING, translation_key='contact', fallback_name='Contact')
     .tuya_battery(dp_id=2, scale=2)
     .tuya_temperature(dp_id=7, scale=10)
     .tuya_humidity(dp_id=8, scale=100)

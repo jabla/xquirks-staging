@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: e6a507d9
+Revision: fbd23cbf
 """
 
 import functools
@@ -22,6 +22,7 @@ from zhaquirks.builder import (
     SensorDeviceClass,
     SensorStateClass,
     UnitOfLength,
+    UnitOfTemperature,
     UnitOfTime,
 )
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
@@ -130,6 +131,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE28C1000000_ewn672ef', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='move_sensitivity', min_value=1, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='z2m_move_sensitivity', fallback_name='Move sensitivity')
     .tuya_number(dp_id=4, type=t.uint32_t, attribute_name='detection_distance_max', min_value=0.75, max_value=9, step=0.75, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='z2m_detection_distance_max', fallback_name='Detection distance max')
     .tuya_sensor(dp_id=9, attribute_name='distance', type=t.uint32_t, divisor=100, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.DISTANCE, unit=UnitOfLength.METERS, entity_type=EntityType.STANDARD, fallback_name='Distance')
@@ -144,7 +147,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_switch(dp_id=107, attribute_name='bathroom', entity_type=EntityType.STANDARD, translation_key='bathroom', fallback_name='Bathroom')
     .tuya_switch(dp_id=108, attribute_name='sleep', entity_type=EntityType.STANDARD, translation_key='sleep', fallback_name='Sleep')
     .tuya_switch(dp_id=109, attribute_name='radar_switch', entity_type=EntityType.CONFIG, translation_key='radar_switch', fallback_name='Radar switch')
-    .tuya_number(dp_id=110, type=t.int32s, attribute_name='temperature_correction', min_value=-1.5, max_value=1.5, step=0.5, unit='℃', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='temperature_correction', fallback_name='Temperature correction')
+    .tuya_number(dp_id=110, type=t.int32s, attribute_name='temperature_correction', min_value=-1.5, max_value=1.5, step=0.5, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.CONFIG, translation_key='temperature_correction', fallback_name='Temperature correction')
     .tuya_number(dp_id=111, type=t.int32s, attribute_name='humidity_correction', min_value=-10, max_value=10, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='humidity_correction', fallback_name='Humidity correction')
     .skip_configuration()
     .filter(no_builtin_quirk)

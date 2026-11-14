@@ -1,10 +1,13 @@
-"""Third Reality 3RSM0347Z: Smart Soil Moisture Sensor Gen2.
+"""Arteco ZS-300Z: Soil moisture sensor.
 
 Generated from the Zigbee2MQTT definition.
-Entity names follow ZHA's own quirk for this device where it shows the same feature.
+Zigbee2MQTT lists these names with _TZE2841000000_0ints6wl / TS0601, _TZE284_0ints6wl / TS0601,
+but the quirk ZHA ships for those does not fit them (it shows DP 106 at 0.1 x z2m's value).
+These names get their own quirk instead of an alias; once a quirk shipped with ZHA matches them,
+this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 37be4fa4
+Revision: a93d899e
 """
 
 import functools
@@ -14,29 +17,32 @@ import pathlib
 import zhaquirks
 from zha.quirks import DEVICE_REGISTRY, DeviceMatch
 import zigpy.types as t
-from zigpy.zcl.foundation import BaseAttributeDefs, ZCLAttributeDef
+from zigpy.zcl import foundation
 
 from zhaquirks.builder import (
+    EntityPlatform,
     EntityType,
+    LIGHT_LUX,
     NumberDeviceClass,
-    PERCENTAGE,
-    QuirkBuilder,
-    UnitOfTemperature,
+    UnitOfTime,
 )
-from zhaquirks.clusters import CustomCluster
+from zhaquirks.tuya import TUYA_CLUSTER_ID
+from zhaquirks.tuya.builder import TuyaQuirkBuilder
 
 
-class Manufacturer3rSoilGen2SpecialClusterCluster(CustomCluster):
-    """3rSoilGen2SpecialCluster (z2m custom cluster)."""
+class BatteryState(t.enum8):
+    """battery_state values (z2m)."""
 
-    cluster_id = 0xFF01
+    low = 0x00
+    middle = 0x01
+    high = 0x02
 
-    class AttributeDefs(BaseAttributeDefs):
-        """Attribute definitions."""
 
-        celsius_degree_calibration = ZCLAttributeDef(id=0x0031, type=t.int16s, manufacturer_code=0x1407)
-        humidity_calibration = ZCLAttributeDef(id=0x0032, type=t.int16s, manufacturer_code=0x1407)
-        fahrenheit_degree_calibration = ZCLAttributeDef(id=0x0033, type=t.int16s, manufacturer_code=0x1407)
+class WaterWarning(t.enum8):
+    """water_warning values (z2m)."""
+
+    none = 0x00
+    alarm = 0x01
 
 
 
@@ -45,11 +51,11 @@ _SHIPPED = pathlib.Path(zhaquirks.__file__).resolve().parent
 _STEPPED_BACK: set = set()
 
 # The Zigbee fingerprints (manufacturer, model) this quirk is for; None matches any manufacturer.
-FINGERPRINTS = [(None, '3RSM0347Z'), ('Third Reality, Inc', '3RSM0347Z')]
+FINGERPRINTS = [('_TZE284_k7p2q5d9', 'TS0601'), ('_TZE284_65gzcss7', 'TS0601'), ('_TZE284_yzr43ayq', 'TS0601')]
 # Names that a model-only fingerprint would catch but Zigbee2MQTT gives to other devices.
 CLAIMED_ELSEWHERE = set()
 # The endpoints this quirk needs, each with the input clusters it puts there where Zigbee2MQTT names none.
-ENDPOINTS = {1: (0xFF01,)}
+ENDPOINTS = {1: (0xEF00,)}
 
 
 @functools.cache
@@ -95,13 +101,10 @@ def _upstream_first(device) -> bool:
     compares each device with the shipped quirks (name, endpoint signature, firmware range)
     and returns False when one matches, so ZHA falls through to the shipped quirk. Then it
     steps back for a device whose endpoints do not fit this quirk (ENDPOINTS).
-
-    Except for the exact names in FINGERPRINTS: ZHA's own quirk for them shows fewer features
-    than this file (compared when the file was built), so this quirk stays for them.
     """
     if (device.manufacturer, device.model) in CLAIMED_ELSEWHERE:
         return False
-    shipped = None if device.manufacturer is not None and (device.manufacturer, device.model) in FINGERPRINTS else _shipped_quirk(device)
+    shipped = _shipped_quirk(device)
     if shipped is not None:
         if device.ieee not in _STEPPED_BACK:
             _STEPPED_BACK.add(device.ieee)
@@ -139,15 +142,26 @@ def no_builtin_quirk(device) -> bool:
 
 
 (
-    QuirkBuilder(None, '3RSM0347Z')
-    .applies_to('Third Reality, Inc', '3RSM0347Z')
-    .replaces(Manufacturer3rSoilGen2SpecialClusterCluster)
-    .number(attribute_name=Manufacturer3rSoilGen2SpecialClusterCluster.AttributeDefs.celsius_degree_calibration.name, cluster_id=Manufacturer3rSoilGen2SpecialClusterCluster.cluster_id, min_value=-200, max_value=200, unit=UnitOfTemperature.CELSIUS, multiplier=0.01, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.STANDARD, translation_key='temperature_offset', fallback_name='Temperature offset', unique_id_suffix='temperature_offset_celsius')
-    .number(attribute_name=Manufacturer3rSoilGen2SpecialClusterCluster.AttributeDefs.humidity_calibration.name, cluster_id=Manufacturer3rSoilGen2SpecialClusterCluster.cluster_id, min_value=-100, max_value=100, unit=PERCENTAGE, multiplier=0.01, entity_type=EntityType.STANDARD, translation_key='humidity_offset', fallback_name='Humidity offset', unique_id_suffix='humidity_offset')
-    .number(attribute_name=Manufacturer3rSoilGen2SpecialClusterCluster.AttributeDefs.fahrenheit_degree_calibration.name, cluster_id=Manufacturer3rSoilGen2SpecialClusterCluster.cluster_id, min_value=-200, max_value=200, unit=UnitOfTemperature.FAHRENHEIT, multiplier=0.01, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.STANDARD, translation_key='fahrenheit_degree_calibration', fallback_name='Fahrenheit degree calibration')
-    # battery: standard clusters, ZHA's own entities
-    # temperature: standard clusters, ZHA's own entities
-    # soil_moisture: standard clusters, ZHA's own entities
+    TuyaQuirkBuilder()
+    .applies_to('_TZE284_k7p2q5d9', 'TS0601')
+    .applies_to('_TZE284_65gzcss7', 'TS0601')
+    .applies_to('_TZE284_yzr43ayq', 'TS0601')
+    .tuya_soil_moisture(dp_id=3, scale=100)
+    .tuya_temperature(dp_id=5, scale=10)
+    .tuya_dp_attribute(dp_id=14, attribute_name='battery_state', type=BatteryState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: BatteryState(int(x)))
+    .enum(attribute_name='battery_state', enum_class=BatteryState, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.DIAGNOSTIC, translation_key='battery_state', fallback_name='Battery state')
+    .tuya_humidity(dp_id=101, scale=100)
+    .tuya_illuminance(dp_id=102)
+    .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='soil_sampling', min_value=5, max_value=3600, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='soil_sampling', fallback_name='Soil sampling interval')
+    .tuya_number(dp_id=106, type=t.uint32_t, attribute_name='illuminance_calibration', min_value=0, max_value=100, step=1, unit=LIGHT_LUX, multiplier=10, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
+    .tuya_binary_sensor(dp_id=110, attribute_name='soil_moisture_warning', entity_type=EntityType.DIAGNOSTIC, translation_key='soil_moisture_warning', fallback_name='Soil moisture warning')
+    .tuya_dp_attribute(dp_id=111, attribute_name='water_warning', type=WaterWarning, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: WaterWarning(int(x)))
+    .enum(attribute_name='water_warning', enum_class=WaterWarning, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.DIAGNOSTIC, translation_key='water_warning', fallback_name='Water warning')
+    # DP 104 (soil_calibration): a setting z2m decodes with its own code, not generated yet
+    # DP 105 (humidity_calibration): a setting z2m decodes with its own code, not generated yet
+    # DP 107 (temperature_calibration): a setting z2m decodes with its own code, not generated yet
+    # DP 110 (soil_moisture_warning_threshold): shares the datapoint with soil_moisture_warning, not generated
+    .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()
 )

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: d9442a79
+Revision: 4d600046
 """
 
 import functools
@@ -13,13 +13,11 @@ import pathlib
 import zhaquirks
 from zha.quirks import DEVICE_REGISTRY, DeviceMatch
 import zigpy.types as t
-from zigpy.zcl import foundation
 
 from zhaquirks.builder import (
     BinarySensorDeviceClass,
     EntityType,
 )
-from zhaquirks.tuya import TUYA_CLUSTER_ID
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
 
 
@@ -123,8 +121,7 @@ def no_builtin_quirk(device) -> bool:
     TuyaQuirkBuilder()
     .applies_to('CAT0001', 'Excellux')
     .tuya_battery(dp_id=4, scale=2)
-    .tuya_dp_attribute(dp_id=7, attribute_name='contact', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: not x)
-    .binary_sensor(attribute_name='contact', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.OPENING, translation_key='contact', fallback_name='Contact')
+    .tuya_binary_sensor(dp_id=7, attribute_name='contact', entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.OPENING, translation_key='contact', fallback_name='Contact')
     .tuya_binary_sensor(dp_id=3, attribute_name='vibration', entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.VIBRATION, fallback_name='Vibration')
     .tuya_number(dp_id=6, type=t.uint32_t, attribute_name='vibration_sensitivity', min_value=0, max_value=50, step=1, entity_type=EntityType.CONFIG, translation_key='vibration_sensitivity', fallback_name='Vibration sensitivity')
     .skip_configuration()

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: c078c9bb
+Revision: de77c414
 """
 
 import functools
@@ -148,7 +148,7 @@ def no_builtin_quirk(device) -> bool:
     QuirkBuilder(None, 'EMIZB-132')
     .applies_to('frient A/S', 'EMIZB-132')
     .replaces(SeMeteringCluster, endpoint_id=2)
-    .sensor(attribute_name=ElectricalMeasurement.AttributeDefs.total_reactive_power.name, cluster_id=ElectricalMeasurement.cluster_id, endpoint_id=2, state_class=SensorStateClass.MEASUREMENT, unit='VAr', entity_type=EntityType.STANDARD, translation_key='power_reactive', fallback_name='Power reactive')
+    .sensor(attribute_name=ElectricalMeasurement.AttributeDefs.total_reactive_power.name, cluster_id=ElectricalMeasurement.cluster_id, endpoint_id=2, state_class=SensorStateClass.MEASUREMENT, unit='var', entity_type=EntityType.STANDARD, translation_key='power_reactive', fallback_name='Power reactive')
     .enum(attribute_name=SeMeteringCluster.AttributeDefs.develco_interface_mode.name, cluster_id=SeMeteringCluster.cluster_id, endpoint_id=2, enum_class=InterfaceMode, entity_type=EntityType.CONFIG, translation_key='interface_mode', fallback_name='Interface mode')
     # power: standard clusters, ZHA's own entities
     # produced_energy: standard clusters, ZHA's own entities

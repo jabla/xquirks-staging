@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: aa7ad09a
+Revision: 5c8cc717
 """
 
 import functools
@@ -143,6 +143,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE28C1000000_lw5ny7tp', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_illuminance(dp_id=20)
     .tuya_number(dp_id=13, type=t.uint32_t, attribute_name='installation_height', min_value=1.5, max_value=6, step=0.75, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='z2m_installation_height', fallback_name='Installation height')
     .tuya_number(dp_id=16, type=t.uint32_t, attribute_name='radar_sensitivity', min_value=68, max_value=90, step=1, entity_type=EntityType.CONFIG, translation_key='radar_sensitivity', fallback_name='Radar sensitivity')

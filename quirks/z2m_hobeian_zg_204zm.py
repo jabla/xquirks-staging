@@ -7,7 +7,7 @@ dp122). These names get their own quirk instead of an alias; once a quirk shippe
 matches them, this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: d37d6205
+Revision: f56770dd
 """
 
 import functools
@@ -151,6 +151,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE200_yflzeeqj', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='static_detection_sensitivity', min_value=0, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='static_detection_sensitivity', fallback_name='Static detection sensitivity')
     .tuya_number(dp_id=4, type=t.uint32_t, attribute_name='static_detection_distance', min_value=0, max_value=6, step=0.01, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='static_detection_distance', fallback_name='Static detection distance')
     .tuya_dp_attribute(dp_id=101, attribute_name='motion_state', type=MotionState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: MotionState(int(x)))

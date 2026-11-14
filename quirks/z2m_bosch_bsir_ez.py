@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: ee98e472
+Revision: 818184ff
 """
 
 import functools
@@ -23,7 +23,9 @@ from zhaquirks.builder import (
     EntityType,
     NumberDeviceClass,
     QuirkBuilder,
+    SensorDeviceClass,
     SensorStateClass,
+    UnitOfElectricPotential,
     UnitOfTime,
 )
 from zhaquirks.clusters import CustomCluster
@@ -224,7 +226,7 @@ def no_builtin_quirk(device) -> bool:
     .number(attribute_name=SsIasWdCluster.AttributeDefs.light_delay.name, cluster_id=SsIasWdCluster.cluster_id, min_value=0, max_value=180, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='light_delay', fallback_name='Light delay')
     .enum(attribute_name=GenPowerCfgCluster.AttributeDefs.primary_power_source.name, cluster_id=GenPowerCfgCluster.cluster_id, enum_class=PrimaryPowerSource, entity_type=EntityType.CONFIG, translation_key='primary_power_source', fallback_name='Primary power source')
     .enum(attribute_name=SsIasZoneCluster.AttributeDefs.current_power_source.name, cluster_id=SsIasZoneCluster.cluster_id, enum_class=CurrentPowerSource, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.DIAGNOSTIC, translation_key='current_power_source', fallback_name='Current power source')
-    .sensor(attribute_name=GenPowerCfgCluster.AttributeDefs.solar_panel_voltage.name, cluster_id=GenPowerCfgCluster.cluster_id, divisor=10, state_class=SensorStateClass.MEASUREMENT, unit='volt', entity_type=EntityType.DIAGNOSTIC, translation_key='solar_panel_voltage', fallback_name='Solar panel voltage')
+    .sensor(attribute_name=GenPowerCfgCluster.AttributeDefs.solar_panel_voltage.name, cluster_id=GenPowerCfgCluster.cluster_id, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.DIAGNOSTIC, translation_key='solar_panel_voltage', fallback_name='Solar panel voltage')
     .command_button(command_name=SsIasWdCluster.ServerCommandDefs.alarm_control.name, cluster_id=SsIasWdCluster.cluster_id, command_args=(7,), entity_type=EntityType.CONFIG, translation_key='trigger_alarm', fallback_name='Trigger alarm', unique_id_suffix='trigger_alarm')
     .command_button(command_name=SsIasWdCluster.ServerCommandDefs.alarm_control.name, cluster_id=SsIasWdCluster.cluster_id, command_args=(0,), entity_type=EntityType.CONFIG, translation_key='stop_alarm', fallback_name='Stop alarm', unique_id_suffix='stop_alarm')
     # battery: standard clusters, ZHA's own entities

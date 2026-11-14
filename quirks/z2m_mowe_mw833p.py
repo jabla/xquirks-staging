@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: e70d218c
+Revision: a8560eb8
 """
 
 import functools
@@ -168,6 +168,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE200_ops9sidw', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='sensitivity', min_value=1, max_value=3, step=1, entity_type=EntityType.CONFIG, translation_key='sensitivity', fallback_name='Sensitivity')
     .tuya_binary_sensor(dp_id=101, attribute_name='radar_reset_flag', entity_type=EntityType.DIAGNOSTIC, translation_key='radar_reset_flag', fallback_name='Radar reset flag')
     .tuya_dp_attribute(dp_id=102, attribute_name='human_motion_state', type=HumanMotionState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: HumanMotionState(int(x)))

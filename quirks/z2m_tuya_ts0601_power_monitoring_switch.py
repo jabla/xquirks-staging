@@ -2,8 +2,8 @@
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
-Status: generated, not verified on hardware.
-Revision: e8fd4486
+Status: generated, not verified on hardware; corrected by devices/tuya_ts0601_power_monitoring_switch.toml.
+Revision: 55d59743
 """
 
 import functools
@@ -22,8 +22,8 @@ from zhaquirks.builder import (
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfEnergy,
-    UnitOfLength,
     UnitOfPower,
+    UnitOfTime,
 )
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
 
@@ -129,7 +129,7 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE204_apiu8k13', 'TS0601')
     .applies_to('_TZE284_q9qytwfa', 'TS0601')
     .tuya_onoff(dp_id=1)
-    .tuya_number(dp_id=7, type=t.uint32_t, attribute_name='countdown', min_value=0, max_value=120, unit=UnitOfLength.METERS, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='countdown', fallback_name='Countdown')
+    .tuya_number(dp_id=7, type=t.uint32_t, attribute_name='countdown', min_value=0, max_value=120, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='countdown', fallback_name='Countdown')
     .tuya_sensor(dp_id=20, attribute_name='energy', type=t.uint32_t, divisor=100, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, fallback_name='Energy')
     .tuya_sensor(dp_id=21, attribute_name='current', type=t.uint32_t, divisor=1000, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.CURRENT, unit=UnitOfElectricCurrent.AMPERE, entity_type=EntityType.STANDARD, fallback_name='Current')
     .tuya_sensor(dp_id=22, attribute_name='power', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.POWER, unit=UnitOfPower.WATT, entity_type=EntityType.STANDARD, fallback_name='Power')

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 017827a8
+Revision: ffa953cd
 """
 
 import functools
@@ -146,6 +146,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE2841000000_hqys6frs', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 0)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_illuminance(dp_id=101)
     .tuya_enum(dp_id=102, attribute_name='work_mode', enum_class=WorkMode, entity_type=EntityType.CONFIG, translation_key='work_mode', fallback_name='Work mode')
     .tuya_switch(dp_id=103, attribute_name='radar_switch', entity_type=EntityType.CONFIG, translation_key='radar_switch', fallback_name='Radar switch')

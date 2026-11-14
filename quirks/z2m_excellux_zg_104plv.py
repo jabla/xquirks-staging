@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 21b435d7
+Revision: 1783e3c7
 """
 
 import functools
@@ -20,6 +20,7 @@ from zhaquirks.builder import (
     BinarySensorDeviceClass,
     EntityPlatform,
     EntityType,
+    LIGHT_LUX,
     NumberDeviceClass,
     SensorStateClass,
     UnitOfTime,
@@ -139,14 +140,16 @@ def no_builtin_quirk(device) -> bool:
     .tuya_battery(dp_id=4, scale=2)
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_binary_sensor(dp_id=3, attribute_name='vibration', entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.VIBRATION, fallback_name='Vibration')
     .tuya_number(dp_id=6, type=t.uint32_t, attribute_name='vibration_sensitivity', min_value=0, max_value=50, step=1, entity_type=EntityType.CONFIG, translation_key='vibration_sensitivity', fallback_name='Vibration sensitivity')
     .tuya_illuminance(dp_id=20)
     .tuya_sensor(dp_id=50, attribute_name='vibration_count', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, unit='times', entity_type=EntityType.STANDARD, translation_key='vibration_count', fallback_name='Vibration count')
     .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='sampling_interval', min_value=5, max_value=1200, step=5, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='sampling_interval', fallback_name='Sampling interval')
-    .tuya_number(dp_id=104, type=t.uint32_t, attribute_name='illuminance_v0', min_value=0, max_value=10000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_v0', fallback_name='Illuminance v0')
-    .tuya_number(dp_id=105, type=t.uint32_t, attribute_name='illuminance_v1', min_value=0, max_value=10000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_v1', fallback_name='Illuminance v1')
-    .tuya_number(dp_id=106, type=t.int32s, attribute_name='illuminance_calibration', min_value=-1000, max_value=1000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
+    .tuya_number(dp_id=104, type=t.uint32_t, attribute_name='illuminance_v0', min_value=0, max_value=10000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_v0', fallback_name='Illuminance v0')
+    .tuya_number(dp_id=105, type=t.uint32_t, attribute_name='illuminance_v1', min_value=0, max_value=10000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_v1', fallback_name='Illuminance v1')
+    .tuya_number(dp_id=106, type=t.int32s, attribute_name='illuminance_calibration', min_value=-1000, max_value=1000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
     .tuya_dp_attribute(dp_id=107, attribute_name='illuminance_warning', type=IlluminanceWarning, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: IlluminanceWarning(int(x)))
     .enum(attribute_name='illuminance_warning', enum_class=IlluminanceWarning, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='illuminance_warning', fallback_name='Illuminance warning')
     .skip_configuration()

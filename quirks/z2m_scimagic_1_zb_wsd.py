@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: fb1f6487
+Revision: ef5898e1
 """
 
 import functools
@@ -20,6 +20,7 @@ from zhaquirks.builder import (
     EntityType,
     NumberDeviceClass,
     UnitOfTemperature,
+    UnitOfTime,
 )
 from zhaquirks.tuya import TUYA_CLUSTER_ID
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
@@ -142,7 +143,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_dp_attribute(dp_id=8, attribute_name='mode', type=Mode, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: Mode(int(x)), dp_converter=lambda x: int(x))
     .enum(attribute_name='mode', enum_class=Mode, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SELECT, entity_type=EntityType.CONFIG, translation_key='mode', fallback_name='Mode')
     .tuya_switch(dp_id=56, attribute_name='delay', entity_type=EntityType.STANDARD, translation_key='delay', fallback_name='Delay')
-    .tuya_number(dp_id=55, type=t.uint32_t, attribute_name='delay_time', min_value=0, max_value=10, step=1, unit='minute', entity_type=EntityType.CONFIG, translation_key='delay_time', fallback_name='Delay time')
+    .tuya_number(dp_id=55, type=t.uint32_t, attribute_name='delay_time', min_value=0, max_value=10, step=1, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='delay_time', fallback_name='Delay time')
     # DP 46 (humidity): z2m exposes no entity for it, not generated
     # DP 41 (humidity_target): z2m exposes no entity for it, not generated
     # DP 42 (humidity_range): z2m exposes no entity for it, not generated

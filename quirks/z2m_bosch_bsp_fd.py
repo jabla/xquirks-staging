@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: a7bd53a7
+Revision: 3345abf6
 """
 
 import functools
@@ -21,6 +21,7 @@ from zhaquirks.builder import (
     NumberDeviceClass,
     PERCENTAGE,
     QuirkBuilder,
+    UnitOfPower,
     UnitOfTime,
 )
 from zhaquirks.clusters import CustomCluster
@@ -157,7 +158,7 @@ def no_builtin_quirk(device) -> bool:
     .replaces(SeMeteringCluster)
     .number(attribute_name=BoschEnergyDeviceCluster.AttributeDefs.led_brightness.name, cluster_id=BoschEnergyDeviceCluster.cluster_id, min_value=0, max_value=100, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='led_brightness', fallback_name='LED brightness')
     .switch(attribute_name=BoschEnergyDeviceCluster.AttributeDefs.energy_saving_mode_enabled.name, cluster_id=BoschEnergyDeviceCluster.cluster_id, entity_type=EntityType.CONFIG, translation_key='energy_saving_mode_enabled', fallback_name='Enable energy-saving mode')
-    .number(attribute_name=BoschEnergyDeviceCluster.AttributeDefs.energy_saving_mode_threshold.name, cluster_id=BoschEnergyDeviceCluster.cluster_id, min_value=1, max_value=50, step=1, unit='watt', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='energy_saving_mode_threshold', fallback_name='Energy-saving threshold')
+    .number(attribute_name=BoschEnergyDeviceCluster.AttributeDefs.energy_saving_mode_threshold.name, cluster_id=BoschEnergyDeviceCluster.cluster_id, min_value=1, max_value=50, step=1, unit=UnitOfPower.WATT, multiplier=0.1, device_class=NumberDeviceClass.POWER, entity_type=EntityType.CONFIG, translation_key='energy_saving_mode_threshold', fallback_name='Energy-saving threshold')
     .number(attribute_name=BoschEnergyDeviceCluster.AttributeDefs.energy_saving_mode_timer.name, cluster_id=BoschEnergyDeviceCluster.cluster_id, min_value=1, max_value=1800, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='energy_saving_mode_timer', fallback_name='Energy-saving timer')
     .command_button(command_name=SeMeteringCluster.ServerCommandDefs.reset_energy_meters.name, cluster_id=SeMeteringCluster.cluster_id, entity_type=EntityType.CONFIG, initially_disabled=True, translation_key='reset_energy_meters', fallback_name='Reset energy meters', unique_id_suffix='reset_energy_meters')
     # switch: standard clusters, ZHA's own entities

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: d4980b0f
+Revision: dc379eb2
 """
 
 import functools
@@ -132,6 +132,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE204_eaulras5', 'TS0601')
     .tuya_dp(dp_id=104, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_dp_attribute(dp_id=112, attribute_name='occupancy', type=t.Bool, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: not x)
     .binary_sensor(attribute_name='occupancy', cluster_id=TUYA_CLUSTER_ID, entity_type=EntityType.STANDARD, device_class=BinarySensorDeviceClass.OCCUPANCY, fallback_name='Occupancy')
     .tuya_sensor(dp_id=9, attribute_name='closest_target_distance', type=t.uint32_t, divisor=100, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.DISTANCE, unit=UnitOfLength.METERS, entity_type=EntityType.STANDARD, translation_key='closest_target_distance', fallback_name='Closest target distance')

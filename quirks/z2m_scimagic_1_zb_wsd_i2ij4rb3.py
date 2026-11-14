@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 36da2fa3
+Revision: f91b80a0
 """
 
 import functools
@@ -21,6 +21,7 @@ from zhaquirks.builder import (
     NumberDeviceClass,
     PERCENTAGE,
     UnitOfTemperature,
+    UnitOfTime,
 )
 from zhaquirks.tuya import TUYA_CLUSTER_ID
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
@@ -144,7 +145,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_dp_attribute(dp_id=8, attribute_name='mode', type=Mode, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: Mode(int(x)), dp_converter=lambda x: int(x))
     .enum(attribute_name='mode', enum_class=Mode, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SELECT, entity_type=EntityType.CONFIG, translation_key='mode', fallback_name='Mode')
     .tuya_switch(dp_id=56, attribute_name='delay', entity_type=EntityType.STANDARD, translation_key='delay', fallback_name='Delay')
-    .tuya_number(dp_id=55, type=t.uint32_t, attribute_name='delay_time', min_value=0, max_value=10, step=1, unit='minute', entity_type=EntityType.CONFIG, translation_key='delay_time', fallback_name='Delay time')
+    .tuya_number(dp_id=55, type=t.uint32_t, attribute_name='delay_time', min_value=0, max_value=10, step=1, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='delay_time', fallback_name='Delay time')
     .tuya_number(dp_id=41, type=t.uint32_t, attribute_name='humidity_target', min_value=1, max_value=99, step=1, unit=PERCENTAGE, entity_type=EntityType.STANDARD, translation_key='humidity_target', fallback_name='Humidity target')
     .tuya_number(dp_id=42, type=t.uint32_t, attribute_name='humidity_range', min_value=1, max_value=10, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='humidity_range', fallback_name='Humidity range')
     .tuya_number(dp_id=47, type=t.int32s, attribute_name='humidity_calibration', min_value=-9, max_value=9, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='humidity_calibration', fallback_name='Humidity calibration')

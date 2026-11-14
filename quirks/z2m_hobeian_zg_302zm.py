@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 5ba1b478
+Revision: ffdb1f18
 """
 
 import functools
@@ -174,6 +174,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to(None, 'ZG-302ZM')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='sensitivity', min_value=0, max_value=19, step=1, entity_type=EntityType.CONFIG, translation_key='sensitivity', fallback_name='Sensitivity')
     .tuya_number(dp_id=4, type=t.uint32_t, attribute_name='distance', min_value=0, max_value=6, step=0.1, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, fallback_name='Distance')
     .tuya_switch(dp_id=101, attribute_name='switch1', entity_type=EntityType.STANDARD, translation_key='switch1', fallback_name='Switch1')

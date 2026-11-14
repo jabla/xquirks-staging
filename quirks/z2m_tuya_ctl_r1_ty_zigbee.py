@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 6aabba60
+Revision: fe234d45
 """
 
 import functools
@@ -145,6 +145,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE204_e9ajs4ft', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='presence_sensitivity', min_value=0, max_value=100, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='presence_sensitivity', fallback_name='Presence sensitivity')
     .tuya_number(dp_id=4, type=t.uint32_t, attribute_name='detection_range', min_value=1.5, max_value=4.5, step=0.1, unit=UnitOfLength.METERS, multiplier=0.1, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='z2m_detection_range', fallback_name='Detection range')
     .tuya_illuminance(dp_id=101)

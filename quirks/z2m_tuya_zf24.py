@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 93c9b04d
+Revision: 3b828ce7
 """
 
 import functools
@@ -133,6 +133,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE28C1000000_pzm3wab5', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='move_sensitivity', min_value=1, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='z2m_move_sensitivity', fallback_name='Move sensitivity')
     .tuya_number(dp_id=4, type=t.uint32_t, attribute_name='detection_distance_max', min_value=0.75, max_value=9, step=0.75, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='z2m_detection_distance_max', fallback_name='Detection distance max')
     .tuya_sensor(dp_id=9, attribute_name='distance', type=t.uint32_t, divisor=100, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.DISTANCE, unit=UnitOfLength.METERS, entity_type=EntityType.STANDARD, fallback_name='Distance')

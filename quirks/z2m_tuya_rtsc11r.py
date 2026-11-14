@@ -2,8 +2,8 @@
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
-Status: generated, not verified on hardware.
-Revision: c292e4d7
+Status: generated, not verified on hardware; corrected by devices/tuya_rtsc11r.toml.
+Revision: 3a02c4a1
 """
 
 import functools
@@ -128,13 +128,15 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE204_mhxn2jso', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=12, type=t.uint32_t, attribute_name='detection_delay', min_value=0, max_value=10, step=0.1, unit=UnitOfTime.SECONDS, multiplier=0.1, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='detection_delay', fallback_name='Detection delay')
     .tuya_sensor(dp_id=19, attribute_name='detection_distance', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.DISTANCE, unit=UnitOfLength.CENTIMETERS, entity_type=EntityType.STANDARD, translation_key='detection_distance', fallback_name='Detection distance')
     .tuya_illuminance(dp_id=20)
     .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='sensitivity', min_value=0, max_value=10, step=1, multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='sensitivity', fallback_name='Sensitivity')
     .tuya_number(dp_id=102, type=t.uint32_t, attribute_name='keep_time', min_value=5, max_value=3600, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='keep_time', fallback_name='Keep time')
-    .tuya_number(dp_id=111, type=t.uint32_t, attribute_name='minimum_range', min_value=0, max_value=1000, step=50, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='minimum_range', fallback_name='Minimum range')
-    .tuya_number(dp_id=112, type=t.uint32_t, attribute_name='maximum_range', min_value=50, max_value=1000, step=50, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='maximum_range', fallback_name='Maximum range')
+    .tuya_number(dp_id=111, type=t.uint32_t, attribute_name='minimum_range', min_value=0, max_value=10, step=0.5, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='minimum_range', fallback_name='Minimum range')
+    .tuya_number(dp_id=112, type=t.uint32_t, attribute_name='maximum_range', min_value=0.5, max_value=10, step=0.5, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='maximum_range', fallback_name='Maximum range')
     .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()

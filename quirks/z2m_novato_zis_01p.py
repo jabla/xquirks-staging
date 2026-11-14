@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 00d93cb8
+Revision: c9ecece4
 """
 
 import functools
@@ -126,6 +126,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE284_who1jxwd', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=102, type=t.uint32_t, attribute_name='presence_distance', min_value=1, max_value=3, step=1, entity_type=EntityType.CONFIG, translation_key='presence_distance', fallback_name='Presence distance')
     .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='presence_sensitivity', min_value=1, max_value=3, step=1, entity_type=EntityType.CONFIG, translation_key='presence_sensitivity', fallback_name='Presence sensitivity')
     .tuya_switch(dp_id=104, attribute_name='radar_switch', entity_type=EntityType.CONFIG, translation_key='radar_switch', fallback_name='Radar switch')

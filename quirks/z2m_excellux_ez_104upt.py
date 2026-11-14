@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: f9886456
+Revision: 564c0c9d
 """
 
 import functools
@@ -18,9 +18,11 @@ from zigpy.zcl import foundation
 from zhaquirks.builder import (
     EntityPlatform,
     EntityType,
+    LIGHT_LUX,
     NumberDeviceClass,
     SensorDeviceClass,
     SensorStateClass,
+    UnitOfElectricPotential,
     UnitOfPressure,
     UnitOfTemperature,
     UnitOfTime,
@@ -174,12 +176,12 @@ def no_builtin_quirk(device) -> bool:
     .tuya_temperature(dp_id=5, scale=1)
     .tuya_illuminance(dp_id=20)
     .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='sampling_interval', min_value=5, max_value=1200, step=5, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='sampling_interval', fallback_name='Sampling interval')
-    .tuya_number(dp_id=104, type=t.uint32_t, attribute_name='illuminance_v0', min_value=0, max_value=10000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_v0', fallback_name='Illuminance v0')
-    .tuya_number(dp_id=105, type=t.uint32_t, attribute_name='illuminance_v1', min_value=0, max_value=10000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_v1', fallback_name='Illuminance v1')
-    .tuya_number(dp_id=106, type=t.int32s, attribute_name='illuminance_calibration', min_value=-1000, max_value=1000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
+    .tuya_number(dp_id=104, type=t.uint32_t, attribute_name='illuminance_v0', min_value=0, max_value=10000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_v0', fallback_name='Illuminance v0')
+    .tuya_number(dp_id=105, type=t.uint32_t, attribute_name='illuminance_v1', min_value=0, max_value=10000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_v1', fallback_name='Illuminance v1')
+    .tuya_number(dp_id=106, type=t.int32s, attribute_name='illuminance_calibration', min_value=-1000, max_value=1000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
     .tuya_dp_attribute(dp_id=107, attribute_name='illuminance_warning', type=IlluminanceWarning, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: IlluminanceWarning(int(x)))
     .enum(attribute_name='illuminance_warning', enum_class=IlluminanceWarning, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='illuminance_warning', fallback_name='Illuminance warning')
-    .tuya_sensor(dp_id=108, attribute_name='uv', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, unit='Volt', entity_type=EntityType.STANDARD, translation_key='uv', fallback_name='UV')
+    .tuya_sensor(dp_id=108, attribute_name='uv', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.STANDARD, translation_key='uv', fallback_name='UV')
     .tuya_sensor(dp_id=109, attribute_name='uv_level', type=t.uint32_t, divisor=10, entity_type=EntityType.STANDARD, translation_key='uv_level', fallback_name='UV level')
     .tuya_number(dp_id=110, type=t.int32s, attribute_name='uv_calibration', min_value=-1, max_value=1, step=0.1, multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='uv_calibration', fallback_name='UV calibration')
     .tuya_dp_attribute(dp_id=111, attribute_name='uv_warning', type=UvWarning, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: UvWarning(int(x)))

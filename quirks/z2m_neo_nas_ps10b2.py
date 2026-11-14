@@ -6,7 +6,7 @@ test confirmed z2m (data/known-conflicts.toml: neo-nas-ps10b2-dp102). These name
 quirk instead of an alias; once a quirk shipped with ZHA matches them, this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 92acbd66
+Revision: 213fd5eb
 """
 
 import functools
@@ -159,6 +159,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE28C1000000_1youk3hj', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_dp_attribute(dp_id=11, attribute_name='human_motion_state', type=HumanMotionState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: HumanMotionState(int(x)))
     .enum(attribute_name='human_motion_state', enum_class=HumanMotionState, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='human_motion_state', fallback_name='Human motion state')
     .tuya_sensor(dp_id=19, attribute_name='dis_current', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.DISTANCE, unit=UnitOfLength.CENTIMETERS, entity_type=EntityType.STANDARD, translation_key='dis_current', fallback_name='Current distance')

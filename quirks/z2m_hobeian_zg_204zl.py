@@ -7,7 +7,7 @@ ZHA ships for those does not fit them (different dp maps). These names get their
 instead of an alias; once a quirk shipped with ZHA matches them, this file steps back.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 734cbcc9
+Revision: 6ab06202
 """
 
 import functools
@@ -150,6 +150,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZD200_gfng0whq', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 0)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_battery(dp_id=4, scale=2)
     .tuya_enum(dp_id=9, attribute_name='sensitivity', enum_class=Sensitivity, entity_type=EntityType.CONFIG, translation_key='sensitivity', fallback_name='Sensitivity')
     .tuya_enum(dp_id=10, attribute_name='keep_time', enum_class=KeepTime, entity_type=EntityType.CONFIG, translation_key='keep_time', fallback_name='Keep time')

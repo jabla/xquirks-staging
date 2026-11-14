@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 150d0b6c
+Revision: 624923b5
 """
 
 import functools
@@ -259,6 +259,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE284_5qfrnbqs', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_illuminance(dp_id=101)
     .tuya_number(dp_id=102, type=t.uint32_t, attribute_name='illuminance_threshold_high', min_value=0, max_value=2000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_threshold_high', fallback_name='Illuminance high threshold')
     .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='illuminance_threshold_low', min_value=0, max_value=1000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_threshold_low', fallback_name='Illuminance low threshold')

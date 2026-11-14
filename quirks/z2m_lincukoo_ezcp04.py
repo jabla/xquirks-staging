@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 0debfb8a
+Revision: bd87dd10
 """
 
 import functools
@@ -159,7 +159,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_number(dp_id=26, type=t.uint32_t, attribute_name='co2_alarm_value', min_value=1000, max_value=10000, step=100, unit=CONCENTRATION_PARTS_PER_MILLION, entity_type=EntityType.CONFIG, translation_key='co2_alarm_value', fallback_name='CO2 alarm value')
     .tuya_enum(dp_id=31, attribute_name='temperature_unit_convert', enum_class=TemperatureUnitConvert, entity_type=EntityType.CONFIG, translation_key='temperature_unit_convert', fallback_name='Temperature unit convert')
     .tuya_sensor(dp_id=20, attribute_name='pm25', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, unit=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, entity_type=EntityType.STANDARD, translation_key='pm25', fallback_name='PM2.5')
-    .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='pm25_alarm_value', min_value=10, max_value=1000, step=10, unit='ug/m3', entity_type=EntityType.CONFIG, translation_key='pm25_alarm_value', fallback_name='PM2.5 alarm value')
+    .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='pm25_alarm_value', min_value=10, max_value=1000, step=10, unit=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER, entity_type=EntityType.CONFIG, translation_key='pm25_alarm_value', fallback_name='PM2.5 alarm value')
     .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()

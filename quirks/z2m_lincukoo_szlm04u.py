@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 108b4938
+Revision: 77f1c1da
 """
 
 import functools
@@ -128,6 +128,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE2841000000_bquwrqh1', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 0)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_illuminance(dp_id=101)
     .tuya_battery(dp_id=4, scale=2)
     .tuya_binary_sensor(dp_id=102, attribute_name='usb_power', entity_type=EntityType.STANDARD, translation_key='usb_power', fallback_name='USB power')

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: da511995
+Revision: c4f7b3df
 """
 
 import functools
@@ -139,6 +139,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE204_7gclukjs', 'TS0601')
     .tuya_dp(dp_id=104, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=2, type=t.uint32_t, attribute_name='move_sensitivity', min_value=0, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='z2m_move_sensitivity', fallback_name='Move sensitivity')
     .tuya_number(dp_id=102, type=t.uint32_t, attribute_name='presence_sensitivity', min_value=0, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='presence_sensitivity', fallback_name='Presence sensitivity')
     .tuya_number(dp_id=3, type=t.uint32_t, attribute_name='detection_distance_min', min_value=0, max_value=8.25, step=0.75, unit=UnitOfLength.METERS, multiplier=0.01, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='z2m_detection_distance_min', fallback_name='Detection distance min')

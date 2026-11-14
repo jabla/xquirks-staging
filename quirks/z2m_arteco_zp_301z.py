@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 7d68ce8d
+Revision: 12bf9fd8
 """
 
 import functools
@@ -128,6 +128,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('B3876M9', 'ZP-301Z')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_sensor(dp_id=14, attribute_name='battery_value', type=t.uint32_t, state_class=SensorStateClass.MEASUREMENT, unit=PERCENTAGE, entity_type=EntityType.STANDARD, translation_key='battery_value', fallback_name='Battery value')
     .tuya_illuminance(dp_id=20)
     .tuya_number(dp_id=100, type=t.uint32_t, attribute_name='brightness_value', min_value=5, max_value=100, step=1, unit=PERCENTAGE, entity_type=EntityType.STANDARD, translation_key='brightness_value', fallback_name='Brightness value')

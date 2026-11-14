@@ -2,8 +2,8 @@
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
-Status: generated, not verified on hardware.
-Revision: 2c6c428c
+Status: generated, not verified on hardware; corrected by devices/hobeian_zg_302zl.toml.
+Revision: 455de16c
 """
 
 import functools
@@ -30,32 +30,6 @@ class PowerOutageMemory(t.enum8):
     off = 0x00
     on = 0x01
     restore = 0x02
-
-
-class AutoOn(t.enum8):
-    """auto_on values (z2m)."""
-
-    off = 0x00
-    all = 0x01
-    ch1 = 0x01
-    ch2 = 0x02
-    ch3 = 0x03
-    ch1_and_ch2 = 0x04
-    ch2_and_ch3 = 0x05
-    ch1_and_ch3 = 0x06
-
-
-class AutoOff(t.enum8):
-    """auto_off values (z2m)."""
-
-    off = 0x00
-    all = 0x01
-    ch1 = 0x01
-    ch2 = 0x02
-    ch3 = 0x03
-    ch1_and_ch2 = 0x04
-    ch2_and_ch3 = 0x05
-    ch1_and_ch3 = 0x06
 
 
 
@@ -165,6 +139,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to(None, 'ZG-302ZL')
     .tuya_dp(dp_id=101, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_number(dp_id=102, type=t.uint32_t, attribute_name='sensitivity', min_value=0, max_value=19, step=1, entity_type=EntityType.CONFIG, translation_key='sensitivity', fallback_name='Sensitivity')
     .tuya_switch(dp_id=1, attribute_name='switch_1', entity_type=EntityType.STANDARD, translation_key='switch_1', fallback_name='Switch 1')
     .tuya_switch(dp_id=2, attribute_name='switch_2', entity_type=EntityType.STANDARD, translation_key='switch_2', fallback_name='Switch 2')
@@ -172,8 +148,6 @@ def no_builtin_quirk(device) -> bool:
     .tuya_switch(dp_id=16, attribute_name='backlight', entity_type=EntityType.CONFIG, translation_key='backlight', fallback_name='Backlight')
     .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='trigger_hold', min_value=5, max_value=28800, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='trigger_hold', fallback_name='Trigger hold')
     .tuya_enum(dp_id=14, attribute_name='power_outage_memory', enum_class=PowerOutageMemory, entity_type=EntityType.CONFIG, translation_key='power_outage_memory', fallback_name='Power outage memory')
-    .tuya_enum(dp_id=104, attribute_name='auto_on', enum_class=AutoOn, entity_type=EntityType.CONFIG, translation_key='auto_on', fallback_name='Auto on')
-    .tuya_enum(dp_id=105, attribute_name='auto_off', enum_class=AutoOff, entity_type=EntityType.CONFIG, translation_key='auto_off', fallback_name='Auto off')
     .skip_configuration()
     .filter(no_builtin_quirk)
     .add_to_registry()

@@ -2,8 +2,8 @@
 
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
-Status: generated, not verified on hardware.
-Revision: 08d209e8
+Status: generated, not verified on hardware; corrected by devices/tuya_ts0601_smart_temperature_switch.toml.
+Revision: d4449a55
 """
 
 import functools
@@ -17,8 +17,9 @@ import zigpy.types as t
 from zhaquirks.builder import (
     EntityType,
     NumberDeviceClass,
+    SensorDeviceClass,
     SensorStateClass,
-    UnitOfLength,
+    UnitOfTemperature,
     UnitOfTime,
 )
 from zhaquirks.tuya.builder import TuyaQuirkBuilder
@@ -142,13 +143,13 @@ def no_builtin_quirk(device) -> bool:
     .tuya_enum(dp_id=8, attribute_name='work_mode', enum_class=WorkMode, entity_type=EntityType.CONFIG, translation_key='work_mode', fallback_name='Work mode')
     .tuya_switch(dp_id=9, attribute_name='autowork', entity_type=EntityType.CONFIG, translation_key='autowork', fallback_name='Autowork')
     .tuya_enum(dp_id=20, attribute_name='temperature_unit', enum_class=TemperatureUnit, entity_type=EntityType.CONFIG, translation_key='temperature_unit', fallback_name='Temperature unit')
-    .tuya_number(dp_id=21, type=t.int32s, attribute_name='temperature_f_setpoint', min_value=-4, max_value=221, step=0.5, unit='℉', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='temperature_f_setpoint', fallback_name='Temperature f setpoint')
-    .tuya_number(dp_id=22, type=t.int32s, attribute_name='temperature_c_setpoint', min_value=-20, max_value=102, step=0.5, unit='℃', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='temperature_c_setpoint', fallback_name='Temperature c setpoint')
-    .tuya_sensor(dp_id=27, attribute_name='temperature_c', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, unit='℃', entity_type=EntityType.DIAGNOSTIC, translation_key='temperature_c', fallback_name='Temperature c')
-    .tuya_sensor(dp_id=28, attribute_name='temperature_f', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, unit='℉', entity_type=EntityType.DIAGNOSTIC, translation_key='temperature_f', fallback_name='Temperature f')
+    .tuya_number(dp_id=21, type=t.int32s, attribute_name='temperature_f_setpoint', min_value=-4, max_value=221, step=0.5, unit=UnitOfTemperature.FAHRENHEIT, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE, entity_type=EntityType.CONFIG, translation_key='temperature_f_setpoint', fallback_name='Temperature f setpoint')
+    .tuya_number(dp_id=22, type=t.int32s, attribute_name='temperature_c_setpoint', min_value=-20, max_value=102, step=0.5, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE, entity_type=EntityType.CONFIG, translation_key='temperature_c_setpoint', fallback_name='Temperature c setpoint')
+    .tuya_sensor(dp_id=27, attribute_name='temperature_c', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit=UnitOfTemperature.CELSIUS, entity_type=EntityType.DIAGNOSTIC, translation_key='temperature_c', fallback_name='Temperature c')
+    .tuya_sensor(dp_id=28, attribute_name='temperature_f', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.TEMPERATURE, unit=UnitOfTemperature.FAHRENHEIT, entity_type=EntityType.DIAGNOSTIC, translation_key='temperature_f', fallback_name='Temperature f')
     .tuya_number(dp_id=29, type=t.uint32_t, attribute_name='temperature_range', min_value=1, max_value=9, step=0.5, multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='temperature_range', fallback_name='Temperature range')
-    .tuya_number(dp_id=30, type=t.int32s, attribute_name='temperature_calibration', min_value=-9, max_value=9, step=1, unit='℉', entity_type=EntityType.CONFIG, translation_key='temperature_calibration', fallback_name='Temperature calibration')
-    .tuya_number(dp_id=55, type=t.uint32_t, attribute_name='cooling_delay', min_value=0, max_value=10, step=1, unit=UnitOfLength.METERS, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='cooling_delay', fallback_name='Cooling delay')
+    .tuya_number(dp_id=30, type=t.int32s, attribute_name='temperature_calibration', min_value=-9, max_value=9, step=1, unit=UnitOfTemperature.FAHRENHEIT, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.CONFIG, translation_key='temperature_calibration', fallback_name='Temperature calibration')
+    .tuya_number(dp_id=55, type=t.uint32_t, attribute_name='cooling_delay', min_value=0, max_value=10, step=1, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='cooling_delay', fallback_name='Cooling delay')
     .tuya_switch(dp_id=56, attribute_name='cooling_delay_switch', entity_type=EntityType.CONFIG, translation_key='cooling_delay_switch', fallback_name='Cooling delay switch')
     # DP 7 (schedules): z2m class custom (handles Buffers), not generated
     .skip_configuration()

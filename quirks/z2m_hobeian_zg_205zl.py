@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: f4fd717f
+Revision: af35b5ad
 """
 
 import functools
@@ -161,6 +161,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to(None, 'ZG-205ZL')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 1)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_illuminance(dp_id=20)
     .tuya_dp_attribute(dp_id=11, attribute_name='motion_state', type=MotionState, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: MotionState(int(x)))
     .enum(attribute_name='motion_state', enum_class=MotionState, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SENSOR, entity_type=EntityType.STANDARD, translation_key='motion_state', fallback_name='Motion state')
@@ -173,7 +175,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_number(dp_id=104, type=t.uint32_t, attribute_name='static_detection_sensitivity', min_value=0, max_value=10, step=1, entity_type=EntityType.CONFIG, translation_key='static_detection_sensitivity', fallback_name='Static detection sensitivity')
     .tuya_enum(dp_id=105, attribute_name='mode', enum_class=Mode, entity_type=EntityType.CONFIG, translation_key='mode', fallback_name='Mode')
     .tuya_enum(dp_id=102, attribute_name='alarm_volume', enum_class=AlarmVolume, entity_type=EntityType.CONFIG, translation_key='alarm_volume', fallback_name='Alarm volume')
-    .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='alarm_time', min_value=1, max_value=60, step=1, unit=UnitOfLength.METERS, device_class=NumberDeviceClass.DISTANCE, entity_type=EntityType.CONFIG, translation_key='alarm_time', fallback_name='Alarm time')
+    .tuya_number(dp_id=101, type=t.uint32_t, attribute_name='alarm_time', min_value=1, max_value=60, step=1, unit=UnitOfTime.MINUTES, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='alarm_time', fallback_name='Alarm time')
     .tuya_switch(dp_id=24, attribute_name='light_mode', entity_type=EntityType.STANDARD, translation_key='light_mode', fallback_name='Light mode')
     .filter(no_builtin_quirk)
     .add_to_registry()

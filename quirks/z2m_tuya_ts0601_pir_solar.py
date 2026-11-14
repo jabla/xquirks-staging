@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 1f6260a2
+Revision: 39ada116
 """
 
 import functools
@@ -143,6 +143,8 @@ def no_builtin_quirk(device) -> bool:
     .applies_to('_TZE284_tre6haif', 'TS0601')
     .tuya_dp(dp_id=1, ep_attribute=TuyaOccupancySensing.ep_attribute, attribute_name=OccupancySensing.AttributeDefs.occupancy.name, converter=lambda x: x == 0)
     .adds(TuyaOccupancySensing)
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_o_to_u_delay')
+    .prevent_default_entity_creation(endpoint_id=1, cluster_id=OccupancySensing.cluster_id, unique_id_suffix='pir_u_to_o_delay')
     .tuya_battery(dp_id=4, scale=2)
     .tuya_dp_attribute(dp_id=9, attribute_name='pir_sensitivity', type=PirSensitivity, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Write, converter=lambda x: PirSensitivity(int(x)), dp_converter=lambda x: int(x))
     .enum(attribute_name='pir_sensitivity', enum_class=PirSensitivity, cluster_id=TUYA_CLUSTER_ID, entity_platform=EntityPlatform.SELECT, entity_type=EntityType.CONFIG, translation_key='pir_sensitivity', fallback_name='PIR sensitivity')

@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 2cce97ce
+Revision: 40a5f967
 """
 
 import functools
@@ -18,6 +18,7 @@ from zigpy.zcl import foundation
 from zhaquirks.builder import (
     EntityPlatform,
     EntityType,
+    LIGHT_LUX,
     NumberDeviceClass,
     PERCENTAGE,
     SensorStateClass,
@@ -149,7 +150,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='soil_sampling', min_value=5, max_value=3600, step=1, unit=UnitOfTime.SECONDS, device_class=NumberDeviceClass.DURATION, entity_type=EntityType.CONFIG, translation_key='soil_sampling', fallback_name='Soil sampling interval')
     .tuya_number(dp_id=104, type=t.int32s, attribute_name='soil_calibration', min_value=-30, max_value=30, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='soil_calibration', fallback_name='Soil moisture calibration')
     .tuya_number(dp_id=105, type=t.int32s, attribute_name='humidity_calibration', min_value=-30, max_value=30, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='humidity_calibration', fallback_name='Humidity calibration')
-    .tuya_number(dp_id=106, type=t.int32s, attribute_name='illuminance_calibration', min_value=-15, max_value=1000, step=1, unit='lux', entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
+    .tuya_number(dp_id=106, type=t.int32s, attribute_name='illuminance_calibration', min_value=-15, max_value=1000, step=1, unit=LIGHT_LUX, device_class=NumberDeviceClass.ILLUMINANCE, entity_type=EntityType.CONFIG, translation_key='illuminance_calibration', fallback_name='Illuminance calibration')
     .tuya_number(dp_id=107, type=t.int32s, attribute_name='temperature_calibration', min_value=-2, max_value=2, step=0.1, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.CONFIG, translation_key='temperature_calibration', fallback_name='Temperature calibration')
     .tuya_number(dp_id=110, type=t.uint32_t, attribute_name='soil_warning', min_value=0, max_value=100, step=1, unit=PERCENTAGE, entity_type=EntityType.CONFIG, translation_key='soil_warning', fallback_name='Soil warning')
     .tuya_dp_attribute(dp_id=111, attribute_name='water_warning', type=WaterWarning, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: WaterWarning(int(x)))

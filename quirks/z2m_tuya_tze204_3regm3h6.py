@@ -3,7 +3,7 @@
 Generated from the Zigbee2MQTT definition.
 Data: zigbee-herdsman-converters, MIT, Copyright (c) 2018 Koen Kanters.
 Status: generated, not verified on hardware.
-Revision: 69515c88
+Revision: cd30e7d4
 """
 
 import functools
@@ -188,7 +188,7 @@ def no_builtin_quirk(device) -> bool:
     .tuya_switch(dp_id=39, attribute_name='child_lock', entity_type=EntityType.CONFIG, translation_key='child_lock', fallback_name='Child lock')
     .tuya_sensor(dp_id=101, attribute_name='voltage', type=t.uint32_t, divisor=10, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.VOLTAGE, unit=UnitOfElectricPotential.VOLT, entity_type=EntityType.STANDARD, fallback_name='Voltage')
     .tuya_sensor(dp_id=102, attribute_name='current', type=t.uint32_t, divisor=1000, state_class=SensorStateClass.MEASUREMENT, device_class=SensorDeviceClass.CURRENT, unit=UnitOfElectricCurrent.AMPERE, entity_type=EntityType.STANDARD, fallback_name='Current')
-    .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='temperature_sensibility', min_value=0.5, max_value=5, step=0.5, unit='  C', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='temperature_sensibility', fallback_name='Temperature sensibility')
+    .tuya_number(dp_id=103, type=t.uint32_t, attribute_name='temperature_sensibility', min_value=0.5, max_value=5, step=0.5, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE_DELTA, entity_type=EntityType.CONFIG, translation_key='temperature_sensibility', fallback_name='Temperature sensibility')
     .tuya_sensor(dp_id=104, attribute_name='energy_today', type=t.uint32_t, divisor=10, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, translation_key='energy_today', fallback_name='Energy today')
     .tuya_sensor(dp_id=105, attribute_name='energy_yesterday', type=t.uint32_t, divisor=10, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, translation_key='energy_yesterday', fallback_name='Energy yesterday')
     .tuya_dp_attribute(dp_id=106, attribute_name='device_mode_type', type=DeviceModeType, access=foundation.ZCLAttributeAccess.Read | foundation.ZCLAttributeAccess.Report, converter=lambda x: DeviceModeType(int(x)))
@@ -196,9 +196,9 @@ def no_builtin_quirk(device) -> bool:
     .tuya_sensor(dp_id=107, attribute_name='energy', type=t.uint32_t, divisor=10, state_class=SensorStateClass.TOTAL_INCREASING, device_class=SensorDeviceClass.ENERGY, unit=UnitOfEnergy.KILO_WATT_HOUR, entity_type=EntityType.STANDARD, fallback_name='Energy')
     .tuya_switch(dp_id=115, attribute_name='radiators_without_integrated_regulation', entity_type=EntityType.CONFIG, translation_key='radiators_without_integrated_regulation', fallback_name='Radiators without integrated regulation')
     .tuya_switch(dp_id=116, attribute_name='antifrost', entity_type=EntityType.CONFIG, translation_key='antifrost', fallback_name='Antifrost')
-    .tuya_number(dp_id=117, type=t.uint32_t, attribute_name='eco_temperature', min_value=5, max_value=30, step=0.5, unit='  C', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='eco_temperature', fallback_name='Eco temperature')
-    .tuya_number(dp_id=118, type=t.uint32_t, attribute_name='comfort_temperature', min_value=5, max_value=35, step=0.5, unit='  C', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='comfort_temperature', fallback_name='Comfort temperature')
-    .tuya_number(dp_id=119, type=t.uint32_t, attribute_name='antifrost_temperature', min_value=5, max_value=15, step=0.5, unit='  C', multiplier=0.1, entity_type=EntityType.CONFIG, translation_key='antifrost_temperature', fallback_name='Antifrost temperature')
+    .tuya_number(dp_id=117, type=t.uint32_t, attribute_name='eco_temperature', min_value=5, max_value=30, step=0.5, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE, entity_type=EntityType.CONFIG, translation_key='eco_temperature', fallback_name='Eco temperature')
+    .tuya_number(dp_id=118, type=t.uint32_t, attribute_name='comfort_temperature', min_value=5, max_value=35, step=0.5, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE, entity_type=EntityType.CONFIG, translation_key='comfort_temperature', fallback_name='Comfort temperature')
+    .tuya_number(dp_id=119, type=t.uint32_t, attribute_name='antifrost_temperature', min_value=5, max_value=15, step=0.5, unit=UnitOfTemperature.CELSIUS, multiplier=0.1, device_class=NumberDeviceClass.TEMPERATURE, entity_type=EntityType.CONFIG, translation_key='antifrost_temperature', fallback_name='Antifrost temperature')
     # DP 1 (state): shares the datapoint with system_mode, not generated
     # DP 2 (preset): shares the datapoint with mode, not generated
     # DP 20 (fault): z2m exposes no entity for it, not generated
