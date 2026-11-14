@@ -63,6 +63,35 @@ export function pullRequests(entry) {
     }));
 }
 
+// How likely a file is to do something wrong on the device (manifest risk), lowest first.
+export const RISKS = ["low", "medium", "high"];
+// The reasons for a risk (manifest risk_why) by code, one sentence each.
+export const RISK_REASONS = Object.freeze({
+  cover: "It controls a cover.",
+  thermostat: "It controls a thermostat.",
+  state_dependency: "One of its settings changes how another value reads.",
+  mixed_manufacturer_code: "It writes a setting with a manufacturer code the rest of its cluster does not use.",
+  take_over_drops: "It replaces ZHA's own quirk and leaves out features that quirk shows.",
+  defect_found: "A device test found a fault. Its fix is not verified yet.",
+  number_settings: "It changes number settings. The device may accept a smaller range.",
+  local_occupancy: "ZHA shows delay settings for it that never reach the device.",
+  take_over: "It replaces ZHA's own quirk.",
+  alias_differs: "ZHA's quirk reads one of its values differently.",
+});
+
+// An entry's risk: "high" when it states none or one this page does not know.
+export function risk(entry) {
+  const value = entry?.risk;
+  return RISKS.includes(value) ? value : "high";
+}
+
+// The reason codes of an entry's risk this page knows, each once, in the entry's order; a code it
+// does not know is skipped.
+export function riskWhy(entry) {
+  const codes = Array.isArray(entry?.risk_why) ? entry.risk_why : [];
+  return [...new Set(codes.filter((code) => typeof code === "string" && Object.hasOwn(RISK_REASONS, code)))];
+}
+
 // The Home Assistant release a tag's hacs.json names, patch number included; null without one.
 export function homeAssistant(hacs) {
   const release = hacs?.homeassistant;

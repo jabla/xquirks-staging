@@ -31,6 +31,17 @@ HEX64 = re.compile(r"[0-9a-f]{64}")
 # A git object name: SHA-1, or SHA-256 in a repository that uses it.
 COMMIT = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
 
+# How likely a file is to do something wrong on the device (an entry's risk), lowest first. A
+# missing or unknown value counts as the highest.
+RISKS = ("low", "medium", "high")
+HIGH = "high"
+# The reasons an entry may give for its risk (risk_why), as codes: text.py and the finder have a
+# sentence for each. A code this release does not know is skipped.
+RISK_REASONS = (
+    "cover", "thermostat", "state_dependency", "mixed_manufacturer_code", "take_over_drops", "defect_found", "number_settings", "local_occupancy",
+    "take_over", "alias_differs",
+)
+
 
 def sha256(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
@@ -155,6 +166,30 @@ def check_entry(slug: str, entry: object) -> None:
         }
     if wrong := [key for key, fine in checks.items() if not fine]:
         raise BadContent(f"manifest entry {slug}: {', '.join(wrong)} missing or malformed")
+
+
+def risk(entry: dict) -> str:
+    """An entry's risk (RISKS): HIGH when it states none or one this release does not know."""
+    value = entry.get("risk")
+    return value if isinstance(value, str) and value in RISKS else HIGH
+
+
+def risk_why(entry: dict) -> tuple[str, ...]:
+    """The reasons for an entry's risk this release knows (RISK_REASONS), each once, in the entry's order."""
+    codes = entry.get("risk_why")
+    if not isinstance(codes, list):
+        return ()
+    return tuple(dict.fromkeys(code for code in codes if isinstance(code, str) and code in RISK_REASONS))
+
+
+def verified(entry: dict) -> bool:
+    """A device test checked the entry's file: it counts as checked, whatever its risk."""
+    return entry.get("status") == "verified"
+
+
+def high_risk(entry: dict) -> bool:
+    """The entry's file is high risk and not verified on a device."""
+    return not verified(entry) and risk(entry) == HIGH
 
 
 def shipped_entries(manifest: dict) -> dict[str, tuple[PurePosixPath, dict]]:

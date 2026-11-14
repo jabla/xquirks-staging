@@ -67,6 +67,12 @@ An entry with a file also has:
   device over
 - `endpoints` (optional): `{"<endpoint>": [cluster ids]}`, what the file's own check needs on the
   device.
+- `risk` (optional): `"low"`, `"medium"` or `"high"`: how likely the file is to do something wrong on
+  the device. A reader takes a missing or unknown value as `"high"`. A file with status `"verified"`
+  counts as checked, whatever its risk.
+- `risk_why` (optional): the reasons as codes (cover, thermostat, state_dependency,
+  mixed_manufacturer_code, take_over_drops, defect_found, number_settings, local_occupancy, take_over,
+  alias_differs). A reader skips a code it does not know.
 
 Only the finder reads `left_out_lines` (the Zigbee2MQTT features a file leaves out), `path` and
 `target` (an alias file and the device it points to), `differs` and `not_built`. Fields not listed

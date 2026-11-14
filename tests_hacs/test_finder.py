@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .integration import ROOT, const, guard, matching
+from .integration import ROOT, const, content, guard, matching
 
 SITE = ROOT / "site"
 NODE = shutil.which("node")
@@ -73,6 +73,9 @@ out.leftOut = Object.fromEntries(Object.entries(input.manifest).map(([slug, entr
 out.leftOutOdd = input.oddEntries.map((entry) => content.leftOutLines(entry));
 out.prs = input.prEntries.map((entry) => content.pullRequests(entry));
 out.releases = input.hacs.map((hacs) => content.homeAssistant(hacs));
+out.risks = input.riskEntries.map((entry) => [content.risk(entry), content.riskWhy(entry)]);
+out.riskReasons = content.RISK_REASONS;
+out.riskTiers = content.RISKS;
 
 // A stand-in fetch: answers from the scenario's table by URL and records each request.
 function stand_in(table, requests) {
@@ -173,6 +176,17 @@ PR_ENTRIES = [
     ({"upstream_open_prs": {"number": 4242}}, []),
     ({}, []),
 ]
+# Entries with a risk in every shape: the page reads them as the integration does.
+RISK_ENTRIES = [
+    {"risk": "low", "risk_why": []},
+    {"risk": "medium", "risk_why": ["number_settings", "take_over"]},
+    {"risk": "high", "risk_why": ["cover", "a_new_reason", "cover"]},
+    {"risk": "none", "risk_why": "cover"},
+    {"risk": "LOW", "risk_why": [5, None, {"code": "cover"}, "thermostat", "__proto__", "toString"]},
+    {"risk": ["low"], "risk_why": {"cover": True}},
+    {},
+    None,
+]
 HACS = [({"homeassistant": "2026.11.0"}, "2026.11.0"), ({"homeassistant": "2026.11"}, None), ({"homeassistant": "2026.11.0b1"}, None), ({"homeassistant": 2026}, None), ({}, None), (None, None), ([], None)]
 # Older or newer than the page reads: the same notice either way.
 UNSUPPORTED = "This page and the device list are out of sync after an update. Reload the page in a while. The xquirks integration is not affected."
@@ -217,6 +231,7 @@ def page():
         "oddEntries": ODD_ENTRIES,
         "prEntries": [entry for entry, _ in PR_ENTRIES],
         "hacs": [hacs for hacs, _ in HACS],
+        "riskEntries": RISK_ENTRIES,
         "loads": LOADS,
     }
     result = subprocess.run(args, input=json.dumps(payload), capture_output=True, text=True, timeout=60, check=True)
@@ -377,6 +392,15 @@ def test_left_out_lines_come_from_the_manifest(page):
 
 def test_pull_request_links_come_from_their_numbers(page):
     assert page["prs"] == [prs for _, prs in PR_ENTRIES]
+
+
+def test_risks_read_like_the_integration(page):
+    """A missing or unknown risk is high, an unknown reason is skipped (CONTENT.md): the same tiers
+    and codes as content.py."""
+    assert tuple(page["riskTiers"]) == content.RISKS
+    assert tuple(page["riskReasons"]) == content.RISK_REASONS
+    assert page["risks"] == [[content.risk(entry or {}), list(content.risk_why(entry or {}))] for entry in RISK_ENTRIES]
+    assert page["risks"][2] == ["high", ["cover"]] and page["risks"][4] == ["high", ["thermostat"]]
 
 
 def test_the_page_reads_the_content_format_of_this_release(page):
