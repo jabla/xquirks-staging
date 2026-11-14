@@ -1,4 +1,4 @@
-"""Config flow (one entry) and the options (the devices xquirks leaves alone)."""
+"""Config flow (one entry) and the options (the devices xquirks leaves alone, high-risk files)."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
-from .conftest import STRINGS, Zha, apply_list, listed, published, setup_entry
+from .conftest import MANIFEST, STRINGS, Zha, apply_list, issue_of, issues_of, listed, published, setup_entry, write_repo
 from .integration import DOMAIN, const
 
 IEEE = "00:11:22:33:44:55:66:01"
@@ -49,11 +49,12 @@ async def test_options_list_the_devices_xquirks_leaves_alone(hass: HomeAssistant
 
     result = await hass.config_entries.options.async_init(entry.entry_id)
     assert result["type"] is FlowResultType.FORM and result["step_id"] == "init"
-    assert set(result["data_schema"].schema) == {const.CONF_EXCLUDED}
-    assert set(STRINGS["options"]["step"]["init"]["data"]) == {const.CONF_EXCLUDED}
+    assert set(result["data_schema"].schema) == {const.CONF_EXCLUDED, const.CONF_HIGH_RISK}
+    assert set(STRINGS["options"]["step"]["init"]["data"]) == {const.CONF_EXCLUDED, const.CONF_HIGH_RISK}
     result = await hass.config_entries.options.async_configure(result["flow_id"], {const.CONF_EXCLUDED: [device]})
     await hass.async_block_till_done(wait_background_tasks=True)
-    assert result["type"] is FlowResultType.CREATE_ENTRY and entry.options == {const.CONF_EXCLUDED: [device]}
+    # High-risk files stay held back unless turned on.
+    assert result["type"] is FlowResultType.CREATE_ENTRY and entry.options == {const.CONF_EXCLUDED: [device], const.CONF_HIGH_RISK: False}
     assert listed(hass)["remove"] == ["z2m_tuya_a.py"]
     # Nothing goes before the list is confirmed.
     assert (quirks_dir / "z2m_tuya_a.py").exists()
@@ -63,3 +64,29 @@ async def test_options_list_the_devices_xquirks_leaves_alone(hass: HomeAssistant
     result = await hass.config_entries.options.async_configure(result["flow_id"], {const.CONF_EXCLUDED: []})
     await hass.async_block_till_done(wait_background_tasks=True)
     assert listed(hass)["remove"] == []
+
+
+async def test_the_options_offer_high_risk_files_only_when_turned_on(hass: HomeAssistant, zha: Zha, repo_dir: Path):
+    """The toggle is off at first and keeps what was saved; saving plans again."""
+    write_repo(repo_dir, {**MANIFEST, "tuya_a": {**MANIFEST["tuya_a"], "risk": "high", "risk_why": ["cover"]}})
+    zha.add_device(IEEE, "_TZE200_aaaa", "TS0601")
+    entry = await setup_entry(hass, repo_dir)
+    assert listed(hass)["install"] == [] and issue_of(hass, "held_back", "z2m_tuya_a.py")
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    defaults = {str(key): key.default() for key in result["data_schema"].schema}
+    assert defaults == {const.CONF_EXCLUDED: [], const.CONF_HIGH_RISK: False}
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {const.CONF_HIGH_RISK: True})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert entry.options == {const.CONF_EXCLUDED: [], const.CONF_HIGH_RISK: True}
+    assert listed(hass)["install"] == ["z2m_tuya_a.py"] and issues_of(hass, "held_back") == []
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert {str(key): key.default() for key in result["data_schema"].schema}[const.CONF_HIGH_RISK] is True
+
+
+def test_the_options_step_says_what_xquirks_offers():
+    step = STRINGS["options"]["step"]["init"]
+    assert step["title"] == "What xquirks offers"
+    assert step["data"][const.CONF_HIGH_RISK] == "Offer high-risk files"
+    assert "**Offer high-risk files**: xquirks holds back files for covers and thermostats" in step["description"]

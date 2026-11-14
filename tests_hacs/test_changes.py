@@ -350,6 +350,8 @@ TRV_MANIFEST = {
         "model": "TRV-ZBT",
         "status": "generated",
         "path": "zcl",
+        "risk": "medium",
+        "risk_why": ["number_settings"],
         # The file's ENDPOINTS (its runtime check).
         "endpoints": {"1": [0xFC11]},
     }

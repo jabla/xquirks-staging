@@ -23,7 +23,15 @@ written, so the plan knows which devices each file of ours claims, older version
   ours; its revision is not withdrawn; the guard passed it (when it is written); no other shipped file
   claims a device it claims; its write claims no device on a custom quirk that is not ours more
   strongly than the installed version did (ZHA tries an exact name before a model-only one; an
-  installed version whose runtime check steps back on the device does not claim it at all).
+  installed version whose runtime check steps back on the device does not claim it at all); it is not
+  held back.
+- F is held back while the options do not offer high-risk files, its entry is high risk and not
+  verified on a device (content.high_risk) and no file of ours has its name (in the folder ZHA loads
+  or in one it loaded before): it is neither downloaded nor installed, a notice names the devices that
+  need it. A file of ours is never held back: the devices that run it get its updates whatever its
+  risk. A held-back file counts as one that cannot come: it takes no device from a file of ours that
+  stays, and the notices that say the change list brings it once something is out of the way leave
+  it out.
 - A file of ours in the target is updated to the offered version. One not in the target stays as it
   is while three hold: its revision is not withdrawn; a device not left out runs it; no file of the
   target claims a device it claims. Else it is removed. A file of the target not in the folder is
@@ -54,7 +62,7 @@ import os
 from collections.abc import Container, Mapping
 from pathlib import PurePath
 
-from .content import ContentState, identities
+from .content import ContentState, high_risk, identities
 from .files import UNREADABLE
 from .guard import endpoint_map
 from .matching import matches
@@ -87,6 +95,7 @@ USERS_NAME = "users_name"  # a file of the user has the name of its file
 USERS_QUIRK = "users_quirk"  # its file would claim a device that runs the user's quirk
 FILE_MISFIT = "file_misfit"  # it does not fit the endpoints of its file's offered version
 FILE_NO_TAKE_OVER = "file_no_take_over"  # its file does not take its exact name over from ZHA's own quirk, which ZHA ships for it
+FILE_HELD_BACK = "file_held_back"  # its file is held back: high risk, not verified on a device
 
 # Why there is no change list now.
 PENDING = "pending"  # a change of ours waits for ZHA to load the folder
@@ -125,7 +134,7 @@ class Lost:
     """A device that runs a file of ours now and none after the change, with the reason."""
 
     device: str
-    reason: str  # NO_FILE, TWO_FILES, FILE_WITHDRAWN, FILE_REFUSED, FILE_CONFLICT, USERS_NAME, USERS_QUIRK, FILE_MISFIT or FILE_NO_TAKE_OVER
+    reason: str  # NO_FILE, TWO_FILES, FILE_WITHDRAWN, FILE_REFUSED, FILE_CONFLICT, USERS_NAME, USERS_QUIRK, FILE_MISFIT, FILE_NO_TAKE_OVER or FILE_HELD_BACK
     file: str = ""  # the file that would be for it
     others: tuple[str, ...] = ()  # USERS_QUIRK: the devices on the user's quirk
     # The installed version took the device's exact name over from ZHA's own quirk: ZHA's quirk takes
@@ -189,6 +198,15 @@ class Blocked:
 
 
 @dataclasses.dataclass(frozen=True)
+class HeldBack:
+    """A shipped file that devices need, held back: high risk, not verified on a device, high-risk
+    files not offered in the options."""
+
+    name: str
+    devices: tuple[str, ...]
+
+
+@dataclasses.dataclass(frozen=True)
 class NotApplied:
     """A file of ours at the offered version that ZHA does not apply to devices it claims."""
 
@@ -223,6 +241,7 @@ class Plan:
     install: list[Install] = dataclasses.field(default_factory=list)
     # Notices: no change, nothing to confirm.
     blocked: list[Blocked] = dataclasses.field(default_factory=list)
+    held_back: list[HeldBack] = dataclasses.field(default_factory=list)
     # Shipped names for devices not left out whose file in the folder is the user's (no record).
     users_files: list[str] = dataclasses.field(default_factory=list)
     # Files of ours at a withdrawn revision: noticed also while the list is held or put aside.
@@ -367,6 +386,7 @@ def make_plan(
     withdrawn: Container[tuple[str, str]] = frozenset(),
     verdicts: Mapping[str, tuple[str, ...] | None] | None = None,
     excluded: Container[str] = frozenset(),
+    offer_high_risk: bool = False,
 ) -> Plan:
     """
     devices: device id -> Device, the ZHA devices of the device registry
@@ -380,6 +400,7 @@ def make_plan(
     verdicts: name -> the guard's reasons to refuse the offered file (empty: passed), missing or None
         while it is not checked
     excluded: ids of the devices the options leave out
+    offer_high_risk: the options offer high-risk files that are not verified (none held back)
     """
     plan = Plan()
     generated = generated or {}
@@ -521,6 +542,13 @@ def make_plan(
     def withdrawn_offer(name: str) -> bool:
         return (name, state.revisions[name]) in withdrawn
 
+    # The names of the files of ours, also those in a folder ZHA loaded before: never held back.
+    names_of_ours = set(ours) | {PurePath(path).name for path, _record in outside}
+
+    def held(name: str) -> bool:
+        """The shipped file is held back: high risk, not verified, not offered in the options, not ours."""
+        return not offer_high_risk and name not in names_of_ours and high_risk(state.manifest[slugs[name]])
+
     needing = {name: tuple(sorted(i for i in ids if needs(i, name))) for name, ids in offered.items()}
 
     def installed_strength(names: dict, device: Device) -> int:
@@ -539,8 +567,8 @@ def make_plan(
         custom[name] = tuple(sorted(i for i in ids if kind[i] == CUSTOM and misfit_of(i, name) is None
                                     and strength(offered_names, devices[i]) > installed_strength(installed_names, devices[i])))
         # The notices below say the change list brings the file once the user's file or quirk is gone:
-        # not for a file that could not come anyway (withdrawn, refused, two files for one device).
-        could_come = not withdrawn_offer(name) and name not in conflicted and not verdicts.get(name)
+        # not for a file that could not come anyway (withdrawn, held back, refused, two files for one device).
+        could_come = not withdrawn_offer(name) and name not in conflicted and not held(name) and not verdicts.get(name)
         if name in users:
             if name not in recorded and could_come and any(not left_out(i) and misfit_of(i, name) is None for i in ids):
                 plan.users_files.append(name)
@@ -550,6 +578,10 @@ def make_plan(
         if not needing[name]:
             continue
         if name in conflicted or withdrawn_offer(name) or custom[name]:
+            continue
+        if held(name):
+            # Before the guard: a held-back file is not downloaded either.
+            plan.held_back.append(HeldBack(name, needing[name]))
             continue
         if name not in ours or ours[name][1]["sha256"] != state.shas[name]:
             verdict = verdicts.get(name)
@@ -621,6 +653,8 @@ def make_plan(
                 found.append(Lost(device_id, FILE_CONFLICT, other, **back))
             elif custom[other]:
                 found.append(Lost(device_id, USERS_QUIRK, other, custom[other], **back))
+            elif held(other):
+                found.append(Lost(device_id, FILE_HELD_BACK, other, **back))
             else:
                 found.append(Lost(device_id, FILE_REFUSED, other, **back))
         return tuple(found)

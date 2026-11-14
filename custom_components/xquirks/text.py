@@ -13,10 +13,11 @@ from urllib.parse import quote, urlencode
 from . import plan as plans
 from .changes import LIMIT, Summary, plain
 from .const import REPOSITORY
+from .content import HIGH, RISKS, risk, risk_why, verified
 from .plan import Device, Lost, Misfit, Plan
 
 UPSTREAM_PR = "https://github.com/zigpy/zha-device-handlers/pull/{number}"
-# A new issue in this collection's repository through its "Device layout" form
+# A new issue in the xquirks repository through its "Device layout" form
 # (.github/ISSUE_TEMPLATE/device-layout.yml): GitHub fills the form's fields from the query by their ids.
 REPORT = f"https://github.com/{REPOSITORY}/issues/new"
 REPORT_FORM = "device-layout.yml"
@@ -25,21 +26,38 @@ REPORT_FORM = "device-layout.yml"
 REPORT_LIMIT = 6000
 # Manage Zigbee device > Signature shows the quirk's signature on a device that runs one; the device's
 # diagnostics hold the one before the quirk (original_signature), which a device layout report needs.
-REPORT_TOO_LONG = ("Too long for the link: paste the device's diagnostics here (the device's page > three-dot menu > Download diagnostics;"
-                   " they also hold its network address and attribute values, which this issue then shows);"
-                   " for a device that runs no quirk, Manage Zigbee device > Signature in that menu is enough.")
+REPORT_TOO_LONG = ("Too long for the link. Paste the device's diagnostics here: the device's page > three-dot menu > Download diagnostics."
+                   " They also hold its network address and attribute values, which this issue then shows."
+                   " For a device that runs no quirk, Manage Zigbee device > Signature in that menu is enough.")
 
 STATUS = {
-    "generated": "generated from Zigbee2MQTT, not verified on a device yet",
+    "generated": "generated, not verified on a device yet",
     "verified": "verified on a device",
 }
 
+# The reasons for a risk (content.RISK_REASONS), as the change list and the notices say them. The
+# finder says the same (site/content.js RISK_REASONS).
+RISK_REASONS = {
+    "cover": "It controls a cover.",
+    "thermostat": "It controls a thermostat.",
+    "state_dependency": "One of its settings changes how another value reads.",
+    "mixed_manufacturer_code": "It writes a setting with a manufacturer code the rest of its cluster does not use.",
+    "take_over_drops": "It replaces ZHA's own quirk and leaves out features that quirk shows.",
+    "defect_found": "A device test found a fault. Its fix is not verified yet.",
+    "number_settings": "It changes number settings. The device may accept a smaller range.",
+    "local_occupancy": "ZHA shows delay settings for it that never reach the device.",
+    "take_over": "It replaces ZHA's own quirk.",
+    "alias_differs": "ZHA's quirk reads one of its values differently.",
+}
+# What the change list compares when an update changes a file's risk: verified first, then the risks.
+TIERS = ("verified", *RISKS)
+
 # Why a file of ours goes.
 REMOVALS = {
-    plans.MOVED: "another file of this collection is for one of its devices",
-    plans.SHIPPED: "ZHA ships a quirk for this device now, this file steps back",
+    plans.MOVED: "another xquirks file is for one of its devices",
+    plans.SHIPPED: "ZHA ships a quirk for this device now. This file steps back",
     plans.HANDED_BACK: "ZHA can handle this device by itself now, xquirks is no longer needed for it",
-    plans.LEFT_OUT: "the devices that used it are left out (disabled, or excluded in the options)",
+    plans.LEFT_OUT: "the devices that used it are left out (disabled or excluded in the options)",
     plans.UNUSED: "none of your ZHA devices uses it any more",
     plans.OUTSIDE: "it is in a folder ZHA no longer loads custom quirks from",
 }
@@ -47,6 +65,25 @@ REMOVALS = {
 
 def status(entry: dict) -> str:
     return STATUS.get(entry["status"], "unknown")
+
+
+def reasons(entry: dict) -> str:
+    """The reasons for an entry's risk as sentences; empty without one this release knows."""
+    return " ".join(RISK_REASONS[code] for code in risk_why(entry))
+
+
+def tier(entry: dict) -> str:
+    """How the change list ranks a file (TIERS): verified, else its risk. Also of a record, which keeps
+    the status and risk of the version written."""
+    return "verified" if verified(entry) else risk(entry)
+
+
+def risk_sentence(entry: dict) -> str:
+    """The risk of a file that is not verified, with its reasons; empty for a verified one."""
+    if verified(entry):
+        return ""
+    found = risk(entry)
+    return " ".join(part for part in (f"Risk: {found}.", reasons(entry), "Test it before you rely on it." if found == HIGH else "") if part)
 
 
 def label(entry: dict | None, name: str) -> str:
@@ -71,9 +108,9 @@ def runs(device: Device, ours: frozenset[str] = frozenset()) -> str:
     if quirk.startswith("zhaquirks."):
         return f"the quirk ZHA ships (`{quirk}`)"
     if f"{quirk}.py" in ours:
-        return f"`{quirk}` from this collection"
+        return f"`{quirk}` from xquirks"
     if quirk.startswith(plans.PREFIX):
-        return f"`{quirk}`, a file this integration does not manage (yours, or gone since ZHA loaded the folder)"
+        return f"`{quirk}`, a file xquirks does not manage (yours or gone since ZHA loaded the folder)"
     return f"the custom quirk `{quirk}`"
 
 
@@ -155,17 +192,18 @@ def _names(ids, devices: dict[str, Device]) -> str:
 
 def _lost(lost: Lost, devices: dict[str, Device]) -> str:
     why = {
-        plans.NO_FILE: "this collection no longer has a quirk for it",
-        plans.TWO_FILES: "two files of this collection claim it",
+        plans.NO_FILE: "xquirks no longer has a quirk for it",
+        plans.TWO_FILES: "two xquirks files claim it",
         plans.FILE_WITHDRAWN: f"the revision of `{lost.file}` on offer is withdrawn",
         plans.FILE_REFUSED: f"`{lost.file}` cannot be written: the guard refused it or it cannot be downloaded (see its repair issue)",
-        plans.FILE_CONFLICT: f"`{lost.file}` stays out: two files of this collection claim one of its devices",
+        plans.FILE_CONFLICT: f"`{lost.file}` stays out: two xquirks files claim one of its devices",
         plans.USERS_NAME: f"a file of yours is named `{lost.file}`",
         plans.USERS_QUIRK: f"`{lost.file}` would also claim {_names(lost.others, devices)}, on a custom quirk of yours",
         plans.FILE_MISFIT: f"its endpoints do not fit `{lost.file}` (see the notice for that file)",
         plans.FILE_NO_TAKE_OVER: f"`{lost.file}` does not take it over from ZHA's own quirk",
-    }[lost.reason] + ("; ZHA's own quirk takes it back" if lost.back else "")
-    line = f"    - {_names([lost.device], devices)} gets no quirk of this collection: {why}"
+        plans.FILE_HELD_BACK: f"`{lost.file}` is held back until it is verified on a device (see its notice)",
+    }[lost.reason] + (". ZHA's own quirk takes it back" if lost.back else "")
+    line = f"    - {_names([lost.device], devices)} gets no file from xquirks: {why}"
     return "\n".join([line, *("    " + item for item in _new_ids(lost.new_ids))])
 
 
@@ -207,10 +245,18 @@ def _pull_requests(entry: dict | None) -> list[str]:
     request's number (an int, content.check_entry), never taken from the manifest."""
     links = [f"[#{number}]({UPSTREAM_PR.format(number=number)})" for number in (int(pr["number"]) for pr in (entry or {}).get("upstream_open_prs", []))]
     if len(links) == 1:
-        return [f"    - an open zha-device-handlers pull request adds this device, testing it helps more: {links[0]}"]
+        return [f"    - an open zha-device-handlers pull request adds this device. Testing it helps more: {links[0]}"]
     if links:
-        return [f"    - open zha-device-handlers pull requests add this device, testing them helps more: {', '.join(links)}"]
+        return [f"    - open zha-device-handlers pull requests add this device. Testing them helps more: {', '.join(links)}"]
     return []
+
+
+def _risk_raised(entry: dict | None, record: dict | None) -> list[str]:
+    """For an update whose offered version ranks higher than the version written (its record): its
+    risk now, with the reasons. Nothing for a record that does not say: it counts as high."""
+    if not entry or not record or TIERS.index(tier(entry)) <= TIERS.index(tier(record)):
+        return []
+    return [" ".join(part for part in (f"    - risk now {tier(entry)}.", reasons(entry)) if part)]
 
 
 def change_list(
@@ -220,8 +266,10 @@ def change_list(
     withdrawn: Mapping[tuple[str, str], str],
     summaries: Mapping[str, Summary | None],
     entry: Callable[[str], dict | None] = lambda name: None,
+    record: Callable[[str], dict | None] = lambda path: None,
 ) -> str:
-    """The change list for its dialog: one bullet per change, with its devices and why."""
+    """The change list for its dialog: one bullet per change, with its devices and why (entry: the
+    manifest entry of a file name, record: the record of an installed file's path)."""
     lines = []
     for removal in plan.remove:
         if removal.withdrawn and removal.reason != plans.OUTSIDE:
@@ -235,6 +283,7 @@ def change_list(
         if update.withdrawn:
             line += f" The installed revision {update.revision} is withdrawn: {plain(withdrawn.get((update.name, update.revision), ''))}"
         lines.append(line)
+        lines += _risk_raised(entry(update.name), record(update.path))
         if summary := summaries.get(update.path):
             items = summary.items()
             lines += [f"    - {item}" for item in items[:LIMIT]]
@@ -244,7 +293,7 @@ def change_list(
         lines += _taken_over(update.took_over, entry(update.name), devices, update.new_ids)
     for install in plan.install:
         found = entry(install.name)
-        known = f" Status: {status(found)}." if found else ""
+        known = " ".join(part for part in (f" Status: {status(found)}.", risk_sentence(found)) if part) if found else ""
         lines.append(f"- **Install** `{install.name}` ({plain(label(install.name))}) for {_names(install.devices, devices)}.{known}")
         lines += _taken_over(install.took_over, found, devices, install.new_ids) + _left_out(install.left_out, devices) + _pull_requests(found)
     return "\n".join(lines)

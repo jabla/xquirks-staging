@@ -11,6 +11,8 @@ ZHA_DOMAIN = "zha"
 CONF_CUSTOM_QUIRKS_PATH = "custom_quirks_path"
 # Options: the ids of the devices xquirks leaves alone.
 CONF_EXCLUDED = "excluded"
+# Options: offer high-risk files that are not verified on a device (held back while off).
+CONF_HIGH_RISK = "high_risk"
 
 STORAGE_KEY = f"{DOMAIN}.installed"
 STORAGE_VERSION = 1
@@ -18,8 +20,14 @@ STORAGE_VERSION = 1
 # Seconds to wait for more device registry changes before checking again.
 REFRESH_COOLDOWN = 10
 
+# A Tuya device that talks through the Tuya MCU cluster sends all its datapoints by itself only when
+# it joins. A data query (a command without payload) makes it send them again. The quirk ZHA applies
+# tells such a device: it puts zhaquirks' Tuya MCU cluster on it, which names this command query_data.
+TUYA_CLUSTER = 0xEF00
+TUYA_QUERY_DATA = 0x03
+
 # The repository whose content-<n> tags carry the quirk files.
-REPOSITORY = "jabla/xquirks"
+REPOSITORY = "jabla/xquirks-staging"
 TAGS_URL = f"https://api.github.com/repos/{REPOSITORY}/git/matching-refs/tags/content-"
 # Files are read at the commit a tag points to, never by the tag's name: a branch of the same name
 # must not stand in for the protected tag.

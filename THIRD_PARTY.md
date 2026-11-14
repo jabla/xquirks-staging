@@ -30,4 +30,4 @@ SOFTWARE.
 ```
 
 The integration and the finder show device pictures from zigbee2mqtt.io. They fetch them when
-needed; this repository holds none.
+needed. This repository holds none.

@@ -318,8 +318,10 @@ async def test_each_record_is_saved_before_its_file_is_written(hass: HomeAssista
 
     with patch.object(files, "replace", replaced), patch.object(files, "write_new", written):
         await apply_list(hass)
-    new_a = {"sha256": content.sha256(quirk_text("tuya_a", 2)), "revision": quirk_revision("tuya_a", 2), "names": TUYA_A_NAMES}
-    new_b = {"sha256": content.sha256(quirk_text("acme_b", 2)), "revision": quirk_revision("acme_b", 2), "names": {"fingerprints": [[None, "B-1"]], "claimed_elsewhere": [["Other", "B-1"]]}}
+    # With the status and risk of the version written: an update that raises the risk says so.
+    new_a = {"sha256": content.sha256(quirk_text("tuya_a", 2)), "revision": quirk_revision("tuya_a", 2), "names": TUYA_A_NAMES, "status": "generated", "risk": content.risk(MANIFEST["tuya_a"])}
+    new_b = {"sha256": content.sha256(quirk_text("acme_b", 2)), "revision": quirk_revision("acme_b", 2), "names": {"fingerprints": [[None, "B-1"]], "claimed_elsewhere": [["Other", "B-1"]]},
+             "status": "verified", "risk": content.risk(MANIFEST["acme_b"])}
     assert seen == {"z2m_tuya_a.py": {**new_a, "previous": old}, "z2m_acme_b.py": new_b}
     # Written: no record keeps the version before.
     assert hass_storage[STORAGE_KEY]["data"]["installed"] == {tuya_a: new_a, str(quirks_dir / "z2m_acme_b.py"): new_b}
@@ -379,6 +381,7 @@ async def test_a_record_a_crash_left_is_settled_to_the_file_on_disk(hass: HomeAs
     path = quirks_dir / "z2m_tuya_a.py"
     path.write_bytes(quirk_text("tuya_a", on_disk))
     old, new = ({"sha256": content.sha256(quirk_text("tuya_a", v)), "revision": quirk_revision("tuya_a", v), "names": TUYA_A_NAMES} for v in (1, 2))
+    written = {**new, "status": "generated", "risk": content.risk(MANIFEST["tuya_a"])}
     data = {"installed": {str(path): {**new, "previous": old}}, "forgotten": {}, "pending": {"run": "a run before the crash", "changes": []}}
     hass_storage[STORAGE_KEY] = {"version": const.STORAGE_VERSION, "minor_version": 1, "key": STORAGE_KEY, "data": data}
     zha.add_device(IEEE_A, "_TZE200_aaaa", "TS0601")
@@ -392,7 +395,7 @@ async def test_a_record_a_crash_left_is_settled_to_the_file_on_disk(hass: HomeAs
     if update:
         await apply_list(hass)
         assert path.read_bytes() == quirk_text("tuya_a", 2)
-        assert hass_storage[STORAGE_KEY]["data"]["installed"] == {str(path): new}
+        assert hass_storage[STORAGE_KEY]["data"]["installed"] == {str(path): written}
 
 
 async def test_a_failed_write_leaves_nothing_behind(tmp_path: Path):

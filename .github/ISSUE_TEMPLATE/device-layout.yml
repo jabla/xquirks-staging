@@ -5,7 +5,7 @@ labels: [device layout]
 body:
   - type: markdown
     attributes:
-      value: The weekly search reads the device signature below and puts the file's clusters where your device has them. The signature the integration's notice fills in holds no name and no address of your device. Downloaded diagnostics hold more, such as the device's network address and attribute values. The search keeps only endpoints and clusters; the issue shows all you paste.
+      value: The weekly search reads the device signature below and moves the file's clusters to the endpoints your device has. The signature from the integration's notice holds no name or address of your device. Downloaded diagnostics hold more, such as the network address and attribute values. The search keeps only endpoints and clusters, but the issue shows everything you paste.
   - type: input
     id: file
     attributes:
@@ -26,7 +26,7 @@ body:
     id: signature
     attributes:
       label: Device signature
-      description: As the device joined, before any quirk. Without the integration's link, the device's diagnostics (the device's page > three-dot menu > Download diagnostics), from which the search takes the signature before the quirk; for a device that runs no quirk, Manage Zigbee device > Signature in that menu is enough.
+      description: "The signature as the device joined, before any quirk. Without the integration's link: the device's diagnostics (the device's page > three-dot menu > Download diagnostics). The search takes the signature from them. For a device that runs no quirk, Manage Zigbee device > Signature in that menu is enough."
       render: json
     validations:
       required: true

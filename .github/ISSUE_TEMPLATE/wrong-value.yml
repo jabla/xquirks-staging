@@ -14,7 +14,7 @@ body:
     id: revision
     attributes:
       label: Revision
-      description: The `Revision:` line at the top of the quirk file, or `revision` in the diagnostics of the xquirks integration (Settings > Devices & services > xquirks > Download diagnostics).
+      description: The `Revision:` line at the top of the quirk file or `revision` in the diagnostics of the xquirks integration (Settings > Devices & services > xquirks > three-dot menu > Download diagnostics).
       placeholder: 1a2b3c4d
     validations:
       required: true
@@ -35,6 +35,6 @@ body:
     id: diagnostics
     attributes:
       label: Device diagnostics
-      description: Settings > Devices & services > the device > Download diagnostics. Drop the file here. Better still, a probe report (CONTRIBUTING.md).
+      description: The device's page > three-dot menu > Download diagnostics. Drop the file here. Better still, a probe report (CONTRIBUTING.md, "A device test").
     validations:
       required: true

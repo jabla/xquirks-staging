@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "xquirks",
-        "description": "Offers the quirk files of this collection that match your ZHA devices. It writes nothing on its own: every install, update and removal comes in one change list, a repair issue for you to confirm.\n\nZHA's custom quirks folder: `{folder}`"
+        "description": "Offers the quirk files that match your ZHA devices. Nothing is written until you confirm the change list in Repairs.\n\nZHA's custom quirks folder: `{folder}`"
       }
     },
     "abort": {
@@ -13,10 +13,11 @@
   "options": {
     "step": {
       "init": {
-        "title": "Devices xquirks leaves alone",
-        "description": "xquirks installs no quirk file just for these devices and removes the files only they use, with the next change list. A file that another device needs is installed or kept: ZHA applies it to every device it lists, these included (the change list names them).\n\nDevices disabled in Home Assistant are left alone the same way.",
+        "title": "What xquirks offers",
+        "description": "**Devices**: xquirks installs no file just for these devices. Files only they use go with the next change list. A file another device needs is installed or kept anyway: ZHA applies it to these devices too (the change list names them).\n\nDevices disabled in Home Assistant are left alone the same way.\n\n**Offer high-risk files**: xquirks holds back files for covers and thermostats, files that replace ZHA's own quirk and files with a known weak spot until they are verified on a device. Turn this on to get them in the change list anyway, marked with their risk.",
         "data": {
-          "excluded": "Devices"
+          "excluded": "Devices",
+          "high_risk": "Offer high-risk files"
         }
       }
     }
@@ -24,15 +25,15 @@
   "issues": {
     "missing_quirks_path": {
       "title": "ZHA has no custom quirks folder",
-      "description": "ZHA loads custom quirk files only from a folder named in configuration.yaml. Until there is one, this integration offers nothing.\n\n1. Create the folder, for example `/config/custom_zha_quirks` (with the File editor, Samba or SSH app). It has to exist before the next step.\n2. Add these lines to `configuration.yaml`:\n\n```yaml\nzha:\n  custom_quirks_path: /config/custom_zha_quirks/\n```\n\n3. Restart Home Assistant."
+      "description": "ZHA loads custom quirk files only from a folder named in configuration.yaml. Until there is one, xquirks offers nothing.\n\n1. Create the folder, for example `/config/custom_zha_quirks` (with the File editor, Samba or SSH app). It has to exist before the next step.\n2. Add these lines to `configuration.yaml`:\n\n```yaml\nzha:\n  custom_quirks_path: /config/custom_zha_quirks/\n```\n\n3. Restart Home Assistant."
     },
     "folder_unreadable": {
       "title": "The custom quirks folder cannot be read",
-      "description": "This integration cannot read ZHA's custom quirks folder `{folder}`: {error}\n\nUntil it can, the change list and the notices stay as they are and nothing is written. Check the folder's permissions."
+      "description": "xquirks cannot read ZHA's custom quirks folder `{folder}`: {error}\n\nUntil it can, xquirks writes nothing and leaves the change list and notices as they are. Check the folder's permissions."
     },
     "no_content_state": {
       "title": "xquirks has no quirk list yet",
-      "description": "xquirks loads the list of quirk files from the GitHub repository it comes from and has no list it can use yet: {reason}\n\nIt tries again every 15 minutes. **Check for quirk updates** on the xquirks device (Settings > Devices & services > xquirks) tries now."
+      "description": "xquirks has no list of quirk files it can use yet: {reason}\n\nIt tries again every 15 minutes. **Check for quirk updates** (Settings > Devices & services > xquirks) tries now."
     },
     "changes": {
       "title": "Quirk changes for your Zigbee devices: {count}",
@@ -40,7 +41,7 @@
         "step": {
           "confirm": {
             "title": "Quirk changes",
-            "description": "{changes}\n\n**Apply all** makes these changes in `{folder}`, then ZHA reloads: your Zigbee devices are unavailable for a few seconds. If a step fails, xquirks tries to put back what it changed before it.\n\nClose this dialog to decide later. **Not now** puts this list aside; a different list comes back as a new repair.",
+            "description": "{changes}\n\n**Apply all** writes these changes to `{folder}` and reloads ZHA: your Zigbee devices are unavailable for a few seconds. If a step fails, xquirks tries to put back what it changed.\n\n**Not now** puts this list aside. A different list comes back as a new repair.",
             "menu_options": {
               "apply": "Apply all",
               "not_now": "Not now"
@@ -48,41 +49,45 @@
           }
         },
         "abort": {
-          "not_loaded": "The integration is not loaded. Reload it and try again.",
-          "stale": "The list changed while this dialog was open: nothing was changed. The new list is under Settings > System > Repairs.",
-          "held_pending": "Nothing was changed: a change waits for ZHA to load the custom quirks folder again (reload ZHA or wait for its next start).",
-          "held_unchecked": "Nothing was changed: a file of the list could not be downloaded and checked yet, xquirks tries again in a few minutes.",
-          "held_zha_unknown": "Nothing was changed: ZHA is not loaded, or xquirks cannot read which quirks it applies: the list waits for ZHA.",
+          "not_loaded": "xquirks is not loaded. Reload it and try again.",
+          "stale": "Nothing was changed: the list changed while this dialog was open. The new one is under Settings > System > Repairs.",
+          "held_pending": "Nothing was changed: an earlier change waits for ZHA to load the custom quirks folder again. Reload ZHA or wait for its next start.",
+          "held_unchecked": "Nothing was changed: a file of the list could not be downloaded and checked yet. xquirks tries again in a few minutes.",
+          "held_zha_unknown": "Nothing was changed: ZHA is not loaded or xquirks cannot read which quirks it applies. The list waits for ZHA.",
           "held_no_content": "Nothing was changed: xquirks has no quirk list it can use right now.",
           "held_no_folder": "Nothing was changed: ZHA has no custom quirks folder.",
           "held_unreadable_folder": "Nothing was changed: the custom quirks folder cannot be read.",
-          "failed": "Nothing was changed: {failed}\n\nxquirks put back what it had changed before this step. Try again once the cause is gone: the repair then lists what is still to do.",
-          "failed_partly": "Stopped at a failure: {failed}\n\nxquirks could not put these changes back:\n\n{left}\n\nZHA loads what is in `{folder}` now (or at its next start); the next list sets the rest right.",
-          "done": "{done}\n\nZHA is reloading the custom quirks folder `{folder}` now: your Zigbee devices are back in a few seconds.",
-          "done_zha_not_loaded": "{done}\n\nZHA is not loaded right now: it uses the changes in `{folder}` when it starts.",
-          "not_now": "Put aside: nothing changes. It waits under Settings > System > Repairs > three-dot menu > Show ignored repairs: open it there to decide later. A different list comes back as a new repair."
+          "failed": "Nothing was changed: {failed}\n\nxquirks put back what it had changed before this step. Once the cause is gone, the repair lists what is left to do.",
+          "failed_partly": "Stopped at a failure: {failed}\n\nxquirks could not put these changes back:\n\n{left}\n\nZHA loads what is in `{folder}` now or at its next start. The next list sets the rest right.",
+          "done": "{done}\n\nZHA is reloading `{folder}` now: your Zigbee devices are back in a few seconds.",
+          "done_zha_not_loaded": "{done}\n\nZHA is not loaded right now. It uses the changes in `{folder}` when it starts.",
+          "not_now": "Put aside: nothing was changed. To decide later: Settings > System > Repairs > three-dot menu > Show ignored repairs. A different list comes back as a new repair."
         }
       }
     },
     "blocked": {
       "title": "{quirk} runs on another custom quirk",
-      "description": "{picture}{devices}\n\nThis collection has `{file}` for it ({status}). xquirks does not write it while a custom quirk of yours handles the device: both files would claim it, then ZHA picks one by fingerprint and file name. To switch, remove your quirk file and reload ZHA; the change list brings the file then."
+      "description": "{picture}{devices}\n\nxquirks has `{file}` for it ({status}) but does not write it while a custom quirk of yours handles the device: ZHA would pick one of the two. To switch, remove your quirk file and reload ZHA. The change list then brings `{file}`."
+    },
+    "held_back": {
+      "title": "High-risk quirk held back: {quirk}",
+      "description": "{picture}{devices}\n\nxquirks has `{file}` for it ({status}) but holds it back until it is verified on a device. {reasons}\n\nTo get it anyway, turn on **Offer high-risk files** under Settings > Devices & services > xquirks > Configure. The next change list then offers it."
     },
     "users_file": {
-      "title": "A file of yours has the name of the quirk for {quirk}",
-      "description": "{picture}`{file}` in `{folder}` has the name of a file of this collection, but this integration did not write it. It leaves your file alone, so it cannot install its own.\n\nTo use the file of this collection, delete yours and reload ZHA: the change list brings it then."
+      "title": "Your file has the name of a quirk: {quirk}",
+      "description": "{picture}`{file}` in `{folder}` has the name of an xquirks file, but xquirks did not write it. It leaves your file alone and cannot install its own.\n\nTo use the xquirks file, delete yours and reload ZHA. The change list then brings it."
     },
     "not_applied": {
-      "title": "ZHA does not use the quirk for {quirk}",
-      "description": "{picture}This integration installed `{file}`, but ZHA does not apply it to these devices:\n\n{devices}\n\nA device on another custom quirk: that file wins, remove one of the two. A device on no quirk: ZHA could not load the file, see the Home Assistant log."
+      "title": "ZHA does not use the quirk: {quirk}",
+      "description": "{picture}xquirks installed `{file}`, but ZHA does not apply it to these devices:\n\n{devices}\n\nA device on another custom quirk: that file wins. Remove one of the two. A device on no quirk: ZHA could not load the file. See the Home Assistant log."
     },
     "misfit": {
-      "title": "The quirk for {quirk} does not fit your device",
-      "description": "{picture}This collection has `{file}` for these devices, but their endpoints do not fit it, so the integration does not install it for them. A device that runs an older version of the file keeps it until an update for other devices replaces it:\n\n{devices}\n\nEach link opens a prefilled report on GitHub with the device's endpoints and clusters, without its name or address. With it, a later content version puts the clusters where the device has them."
+      "title": "Quirk does not fit your device: {quirk}",
+      "description": "{picture}`{file}` does not fit the endpoints of these devices, so xquirks does not install it for them. A device that runs an older version keeps it until an update for other devices replaces it:\n\n{devices}\n\nEach link opens a prefilled report on GitHub with the device's endpoints and clusters, without its name or address. With it, a later version of the file can fit the device."
     },
     "changed": {
       "title": "Changed quirk left alone: {quirk}",
-      "description": "{picture}`{file}` in `{folder}` was installed by this integration and changed since. It is left as it is: no change list updates or removes it.\n\nTo hand it back to this integration, undo your change or delete the file."
+      "description": "{picture}`{file}` in `{folder}` was changed after xquirks installed it. xquirks leaves it as it is: no change list updates or removes it.\n\nTo hand it back to xquirks, undo your change or delete the file."
     },
     "reload": {
       "title": "Quirk changes wait for a ZHA reload: {count}",
@@ -98,32 +103,32 @@
           }
         },
         "abort": {
-          "not_loaded": "The integration is not loaded. Reload it and try again.",
+          "not_loaded": "xquirks is not loaded. Reload it and try again.",
           "nothing_to_do": "Nothing to do any more: the files or devices changed in the meantime.",
           "failed": "Nothing was changed:\n\n{failed}",
-          "not_now": "Put aside: ZHA uses the changes when it next loads, at the latest after a restart of Home Assistant. It waits under Settings > System > Repairs > three-dot menu > Show ignored repairs: open it there to decide later."
+          "not_now": "Put aside: ZHA uses the changes when it next loads, at the latest after a restart of Home Assistant. To decide later: Settings > System > Repairs > three-dot menu > Show ignored repairs."
         }
       }
     },
     "withdrawn_copy": {
-      "title": "Withdrawn quirk copy for {quirk}",
-      "description": "{picture}`{file}` in `{folder}` has no record in this integration (it was put there by hand, or its record was lost). It is revision {revision} of this collection, which was withdrawn: {reason}\n\nZHA loads it for your devices. Remove it from the folder and reload ZHA. Once your copy is gone, the change list brings the current file of this collection, if it ships one for this Home Assistant release."
+      "title": "Withdrawn quirk copy: {quirk}",
+      "description": "{picture}`{file}` in `{folder}` has no record in xquirks: it was put there by hand or its record was lost. It is revision {revision}, which was withdrawn: {reason}\n\nZHA loads it for your devices. Remove it from the folder and reload ZHA. The change list then brings the current file if there is one for this Home Assistant release."
     },
     "withdrawn_installed": {
       "title": "Withdrawn quirk revision in use: {quirk}",
-      "description": "{picture}`{file}` in `{folder}` is revision {revision} of this collection, which was withdrawn: {reason}\n\nZHA uses it for your devices until the change list updates it to a revision that is not withdrawn or removes it: see Settings > System > Repairs (an ignored list is under Show ignored repairs)."
+      "description": "{picture}`{file}` in `{folder}` is revision {revision}, which was withdrawn: {reason}\n\nZHA uses it for your devices until the change list updates or removes it. The list is in Settings > System > Repairs, an ignored one under Show ignored repairs."
     },
     "download_waiting": {
       "title": "Quirk changes wait for a download",
-      "description": "xquirks could not download these files of the change list yet:\n\n{files}\n\nThe change list waits until it has checked them; xquirks tries again every 15 minutes."
+      "description": "xquirks could not download these files of the change list yet:\n\n{files}\n\nThe change list waits until it has checked them. xquirks tries again every 15 minutes."
     },
     "unavailable": {
       "title": "Quirk file cannot be downloaded: {quirk}",
-      "description": "`{file}` of the content state in use cannot be used: {error}\n\nNo change list writes it. An installed copy of it stays at its revision while its devices use it and no other file takes one of them. Please report it in the xquirks issue tracker with the diagnostics of this integration (Settings > Devices & services > xquirks > three-dot menu > Download diagnostics)."
+      "description": "`{file}` cannot be used: {error}\n\nNo change list writes it. An installed copy stays at its revision while its devices use it and no other file takes one of them. Please report it in the xquirks issue tracker with the xquirks diagnostics (Settings > Devices & services > xquirks > three-dot menu > Download diagnostics)."
     },
     "refused": {
       "title": "Quirk file refused: {quirk}",
-      "description": "`{file}` (revision {revision}) holds code this integration does not allow in a quirk file or targets devices it is not offered for. This integration refused it: no change list writes it. An installed copy of it stays at its revision while its devices use it and no other file takes one of them; the change list says when it goes.\n\nThis should never happen. It can mean that someone tampered with the repository this integration loads its quirk files from. Please report it in the xquirks issue tracker with the diagnostics of this integration (Settings > Devices & services > xquirks > three-dot menu > Download diagnostics)."
+      "description": "`{file}` (revision {revision}) holds code xquirks does not allow in a quirk file or targets devices it is not offered for. xquirks refused it: no change list writes it. An installed copy stays at its revision while its devices use it and no other file takes one of them. The change list says when it goes.\n\nThis should never happen. It can mean that someone tampered with the repository xquirks loads its quirk files from. Please report it in the xquirks issue tracker with the xquirks diagnostics (Settings > Devices & services > xquirks > three-dot menu > Download diagnostics)."
     }
   },
   "entity": {

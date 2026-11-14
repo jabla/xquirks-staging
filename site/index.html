@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- data-repo: the GitHub owner/name of this repo, the only place the page names it. -->
-<html lang="en" data-repo="jabla/xquirks">
+<html lang="en" data-repo="jabla/xquirks-staging">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,8 +16,8 @@
 <meta property="og:site_name" content="xquirks">
 <meta property="og:title" content="xquirks finder">
 <meta property="og:description" content="Extra quirks for ZHA, Home Assistant's Zigbee integration. Device paired, but features missing? Find its quirk here.">
-<meta property="og:url" content="https://jabla.github.io/xquirks/">
-<meta property="og:image" content="https://jabla.github.io/xquirks/social.png">
+<meta property="og:url" content="https://jabla.github.io/xquirks-staging/">
+<meta property="og:image" content="https://jabla.github.io/xquirks-staging/social.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="xquirks finder: extra quirks for ZHA, Home Assistant's Zigbee integration">
@@ -97,7 +97,7 @@
     </div>
     <div id="unmatched" hidden>
       <h3>No file here</h3>
-      <p>This repo has no file for these devices. That does not mean ZHA lacks support: most devices work with ZHA itself or with a quirk that ships with it. If Zigbee2MQTT supports one of them and ZHA does not, report it.</p>
+      <p>This repo has no file for these devices. That does not mean ZHA lacks support: most devices work with ZHA itself or with a quirk that ships with it. If ZHA does not support one of them fully, report it.</p>
       <ul id="unmatched-list" class="names"></ul>
     </div>
   </section>
@@ -115,6 +115,9 @@
           <option value="all">All devices</option>
           <option value="file">With a file</option>
           <option value="verified">Verified on a device</option>
+          <option value="high">High risk</option>
+          <option value="medium">Medium risk</option>
+          <option value="low">Low risk</option>
           <option value="prs">With an open upstream PR</option>
           <option value="nofile">Without a file</option>
         </select>
@@ -152,6 +155,7 @@
 <footer>
   <p id="sources"></p>
   <p>Status <span class="badge generated">generated</span>: built from the Zigbee2MQTT definition and tested against the output of Zigbee2MQTT's own converters, not yet checked on a real device. <span class="badge verified">verified</span>: someone ran the probe on the device and the quirk matched.</p>
+  <p>Risk: low for readings and simple controls, medium for number settings, high for covers, thermostats, take-overs of ZHA's own quirk and files with a known weak spot. Verified files show no risk.</p>
   <p>Device pictures and device pages come from <a href="https://www.zigbee2mqtt.io/supported-devices/">zigbee2mqtt.io</a>.</p>
   <p><a data-repo-link="" href="#">Source, README and issues on GitHub</a></p>
 </footer>

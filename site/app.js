@@ -2,7 +2,7 @@
 // with matcher.js against the manifest of the newest content tag (content.js) and links the
 // matching quirk files.
 
-import { LOADING, failure, fileUrl, leftOutLines, loadContent, notReady, pullRequests, treeUrl } from "./content.js";
+import { LOADING, failure, fileUrl, leftOutLines, loadContent, notReady, pullRequests, riskShown, treeUrl } from "./content.js";
 import { TEMPLATE, compareDevices, compareStrings, devicesFromJson, matches } from "./matcher.js";
 
 const REPO = document.documentElement.dataset.repo;
@@ -112,6 +112,18 @@ function status(entry) {
   return el("span", { class: Object.hasOwn(STATUS_CLASS, entry.status) ? STATUS_CLASS[entry.status] : "badge" }, entry.status);
 }
 
+// The risk of a file that is not verified, next to its status; its reasons in the tooltip.
+function riskBadge(entry) {
+  const shownRisk = riskShown(entry);
+  return shownRisk ? [" ", el("span", { class: `badge risk-${shownRisk.tier}`, title: shownRisk.title }, shownRisk.badge)] : null;
+}
+
+// The device card's note on a high-risk file: why, and that the integration offers it only on request.
+function riskNote(entry) {
+  const note = riskShown(entry)?.note;
+  return note ? el("span", { class: "note" }, note) : null;
+}
+
 // The file's Revision line (the content hash at its top): which content an issue report is about.
 function revision(entry) {
   return entry.revision ? el("span", { class: "revision", title: "Revision: the content hash the file states at its top" }, entry.revision) : null;
@@ -125,10 +137,27 @@ function overZha(entry) {
   return el("span", { class: "note" }, `ZHA ships its own quirk for this device, which shows less: this file takes the device over.${adds}${zhaOnly}`);
 }
 
-// Why an entry has no file.
+// The manifest's not_built reason in plain words, null when there is none for it.
+const KIND_PLURALS = { light: "lights", lock: "locks", fan: "fans" };
+function notBuiltText(reason) {
+  if (reason.startsWith("endpoint unclear")) return "it is not clear which endpoint each feature is on";
+  if (reason.startsWith("datapoints that cannot be translated yet")) return "some of its datapoints cannot be translated yet";
+  // "complex kind: cover (no position datapoint)": a cover or thermostat that cannot be translated yet.
+  const plan = /^complex kind: (cover|climate) \(/.exec(reason);
+  if (plan) return `this ${plan[1] === "cover" ? "cover" : "thermostat"} cannot be translated yet`;
+  // "complex kind: ['light']": a kind that gets no file yet.
+  const kinds = /^complex kind: \[(.*)\]$/.exec(reason)?.[1].match(/\w+/g) || [];
+  if (kinds.length === 1 && KIND_PLURALS[kinds[0]]) return `${KIND_PLURALS[kinds[0]]} are not generated yet`;
+  return null;
+}
+
+// Why an entry has no file. The raw reason stays in the tooltip for reports.
 function noFile(entry) {
   if (entry.status === "upstream") return "No file: zha-device-handlers covers this device, nothing to install.";
-  if (entry.not_built) return `No file yet (${entry.not_built}).`;
+  if (entry.not_built) {
+    const why = notBuiltText(entry.not_built);
+    return el("span", { title: entry.not_built }, why ? `No file yet: ${why}.` : "No file yet.");
+  }
   return "No file shipped for this device.";
 }
 
@@ -213,6 +242,8 @@ function fileItem(entry, device) {
     revision(entry),
     " ",
     status(entry),
+    riskBadge(entry),
+    riskNote(entry),
     entry.path === "alias" ? el("span", { class: "note" }, `Alias: lets the quirk that ships with ZHA for ${entry.target.join(" / ")} claim this name too.`) : null,
     overZha(entry),
     leftOut(entry),
@@ -388,6 +419,9 @@ const KINDS = {
   all: () => true,
   file: (entry) => Boolean(entry.file),
   verified: (entry) => entry.status === "verified",
+  high: (entry) => riskShown(entry)?.tier === "high",
+  medium: (entry) => riskShown(entry)?.tier === "medium",
+  low: (entry) => riskShown(entry)?.tier === "low",
   prs: (entry) => pullRequests(entry).length > 0,
   nofile: (entry) => !entry.file,
 };
@@ -403,7 +437,7 @@ function row(slug, entry) {
     el("td", { class: "picture-cell", role: "cell" }, picture),
     cell("Device", "device-cell", el("strong", {}, title(entry, slug)), entry.description ? el("span", { class: "what" }, entry.description) : null, pageLink(entry)),
     cell("Fingerprints", "fingerprints", fingerprints, claimed),
-    cell("Status", null, entry.file ? status(entry) : el("span", { class: "badge" }, "no file"), entry.path === "alias" ? el("span", { class: "note" }, "alias") : null,
+    cell("Status", null, entry.file ? [status(entry), riskBadge(entry)] : el("span", { class: "badge" }, "no file"), entry.path === "alias" ? el("span", { class: "note" }, "alias") : null,
       entry.file && entry.over_zha ? el("span", { class: "note" }, "over ZHA's quirk") : null),
     cell("File", "file-cell", entry.file ? [fileLink(entry), " ", revision(entry)] : noFile(entry)),
     cell("Upstream PRs", null, prs.length ? el("span", { class: "prlist" }, prs.map((pr) => el("a", { href: pr.url, title: pr.title }, `#${pr.number}`))) : "none"),
@@ -459,7 +493,7 @@ function sources() {
   const versions = Object.values(manifest).find((entry) => entry.sources)?.sources;
   const parts = [];
   const tag = el("a", { href: treeUrl(REPO, state) }, state.tag);
-  parts.push("Files of the tested state ", tag, state.date ? ` (${state.date})` : "", ".");
+  parts.push("Quirk files: ", tag, state.date ? ` (${state.date})` : "", ".");
   // "dev <40 hex digits>" as the README writes it: "dev 1d6598c".
   const short = (version) => version.replace(/\b([0-9a-f]{7})[0-9a-f]{33}\b/, "$1");
   if (versions) parts.push(` Data: Zigbee2MQTT (zigbee-herdsman-converters) ${short(versions["zigbee-herdsman-converters"])}, zha-device-handlers ${short(versions["zha-device-handlers"])}.`);

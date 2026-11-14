@@ -493,7 +493,7 @@ async def test_withdrawn_revision_without_a_way_out_is_removed(hass: HomeAssista
     flow = await start_fix(hass, issue)
     changes = flow["description_placeholders"]["changes"]
     assert f"`z2m_tuya_a.py` (Tuya A): its revision {quirk_revision('tuya_a')} is withdrawn: Wrong unit." in changes
-    assert "Radar gets no quirk of this collection: the revision of `z2m_tuya_a.py` on offer is withdrawn" in changes
+    assert "Radar gets no file from xquirks: the revision of `z2m_tuya_a.py` on offer is withdrawn" in changes
     flow = await continue_fix(hass, flow, {"next_step_id": "apply"})
     assert flow["type"] is FlowResultType.ABORT and flow["reason"] == "done", flow
     assert not (quirks_dir / "z2m_tuya_a.py").exists()
@@ -674,7 +674,7 @@ async def test_devices_never_move_to_a_withdrawn_revision(hass: HomeAssistant, z
     flow = await start_fix(hass, issue_of(hass, "changes"))
     changes = flow["description_placeholders"]["changes"]
     assert "**Update** `z2m_tuya_a.py` (Tuya A) for Radar B." in changes
-    assert "Radar A gets no quirk of this collection: the revision of `z2m_tuya_a_aaaa.py` on offer is withdrawn" in changes
+    assert "Radar A gets no file from xquirks: the revision of `z2m_tuya_a_aaaa.py` on offer is withdrawn" in changes
     flow = await continue_fix(hass, flow, {"next_step_id": "apply"})
     assert flow["type"] is FlowResultType.ABORT and flow["reason"] == "done", flow
     assert (quirks_dir / "z2m_tuya_a.py").read_bytes() == quirk_text("tuya_a", 2)
@@ -699,7 +699,7 @@ async def test_a_move_names_the_file_the_device_goes_to(hass: HomeAssistant, zha
     assert listed(hass) == {"remove": ["z2m_tuya_a.py"], "update": [], "install": ["z2m_tuya_a_aaaa.py"]}
     changes = (await start_fix(hass, issue_of(hass, "changes")))["description_placeholders"]["changes"]
     # The old file is no longer in the manifest: the list names it by its file name.
-    assert r"**Remove** `z2m_tuya_a.py` (z2m\_tuya\_a.py): another file of this collection is for one of its devices." in changes
+    assert r"**Remove** `z2m_tuya_a.py` (z2m\_tuya\_a.py): another xquirks file is for one of its devices." in changes
     assert "Radar A moves to `z2m_tuya_a_aaaa.py`" in changes
 
 
@@ -983,7 +983,7 @@ async def test_refs_in_other_shapes_are_left_out(hass: HomeAssistant, zha: Zha, 
         {"ref": "refs/tags/content-" + "9" * 5000, "object": {"sha": "a" * 40, "type": "commit"}},
         {"ref": "refs/tags/content-7", "object": {"sha": "not a sha", "type": "commit"}},
         {"ref": "refs/tags/content-8", "object": {"sha": "b" * 40, "type": "tree"}},
-        # An annotated tag: content.yml writes lightweight ones only.
+        # An annotated tag: the publication writes lightweight ones only.
         {"ref": "refs/tags/content-9", "object": {"sha": "c" * 40, "type": "tag"}},
         {"ref": "refs/tags/content-10"},
     ]

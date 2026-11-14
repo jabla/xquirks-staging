@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from .conftest import content_json, tag_files, write_repo
-from .integration import content, guard
+from .integration import const, content, guard
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -92,9 +92,10 @@ def test_real_manifest_entries_are_taken():
     """Frozen real entries: a zcl file with endpoints, a Tuya file that leaves a name to another file,
     alias files by target and by alias groups, a file that takes a device over, a refused take-over,
     a device not built, a file with open upstream pull requests, a new file whose picture is not
-    pinned yet. A content state takes them; the guard reads each file's targets from its entry."""
+    pinned yet. A content state takes them; the guard reads each file's targets from its entry, the
+    integration its risk."""
     keys = {key for entry in REAL_ENTRIES.values() for key in entry}
-    assert {"endpoints", "claimed_elsewhere", "target", "aliases", "over_zha", "swap", "not_built", "upstream_open_prs", "picture_sha256", "sources"} <= keys
+    assert {"endpoints", "claimed_elsewhere", "target", "aliases", "over_zha", "swap", "not_built", "upstream_open_prs", "picture_sha256", "sources", "risk", "risk_why"} <= keys
     assert any(not entry.get("file") and entry.get("swap") for entry in REAL_ENTRIES.values())
     assert {type(entry.get("picture_sha256")) for entry in REAL_ENTRIES.values()} == {str, type(None)}
     state = content.from_manifest(REAL_ENTRIES, tag="content-3", content=3, homeassistant="2026.11.0", withdrawn={})
@@ -105,6 +106,8 @@ def test_real_manifest_entries_are_taken():
     assert state.sources == next(iter(REAL_ENTRIES.values()))["sources"]
     for name, entry in files.items():
         assert guard.Targets.of(entry) is not None, name
+        # Every file states its risk with reasons this release knows.
+        assert entry["risk"] == content.risk(entry) and tuple(entry["risk_why"]) == content.risk_why(entry), name
 
 
 def test_release_zip_has_the_integration_at_its_root(tmp_path: Path):
@@ -138,8 +141,8 @@ def test_hacs_and_integration_metadata():
     for key in ("domain", "name", "version", "documentation", "issue_tracker", "codeowners", "iot_class", "config_flow"):
         assert manifest[key], key
     assert manifest["requirements"] == []
-    # strings.json and translations/en.json are the same text.
-    assert (folder / "strings.json").read_text() == (folder / "translations" / "en.json").read_text()
+    # strings.json and translations/en.json are the same file, byte for byte (read_text would hide line endings).
+    assert (folder / "strings.json").read_bytes() == (folder / "translations" / "en.json").read_bytes()
 
 
 def _strings(tree: dict, prefix: str = "") -> dict[str, str]:
@@ -150,6 +153,20 @@ def _strings(tree: dict, prefix: str = "") -> dict[str, str]:
         else:
             out[prefix + key] = value
     return out
+
+
+def test_every_issue_and_option_the_integration_shows_has_its_texts():
+    """The translation keys the code names: every notice kind the manager creates and every option of
+    the options step, in each language."""
+    folder = load_builder().integration_folder()
+    code = "\n".join(path.read_text() for path in folder.glob("*.py"))
+    kinds = set(re.findall(r'\("(\w+)", (?:True|False), ', code)) | set(re.findall(r'^(?:[A-Z_]+) = "(\w+)"$', (folder / "manager.py").read_text(), re.M)) & {"missing_quirks_path", "folder_unreadable", "no_content_state"}
+    assert {"held_back", "blocked", "changes"} <= kinds
+    options = {const.CONF_EXCLUDED, const.CONF_HIGH_RISK}
+    for path in sorted((folder / "translations").glob("*.json")):
+        strings = json.loads(path.read_text())
+        assert kinds <= set(strings["issues"]), path.name
+        assert set(strings["options"]["step"]["init"]["data"]) == options, path.name
 
 
 def test_every_translation_has_the_keys_and_placeholders_of_en():
@@ -206,3 +223,36 @@ def test_entries_without_a_file_need_their_fingerprints_only():
     for broken in ({"x": []}, {"x": {"file": None}}, []):
         with pytest.raises(content.BadContent):
             content.from_manifest(broken, tag="content-3", content=3, homeassistant=None, withdrawn={})
+
+
+@pytest.mark.parametrize(
+    ("fields", "risk", "why"),
+    [
+        ({"risk": "low", "risk_why": []}, "low", ()),
+        ({"risk": "medium", "risk_why": ["number_settings"]}, "medium", ("number_settings",)),
+        ({"risk": "high", "risk_why": ["cover", "take_over"]}, "high", ("cover", "take_over")),
+        # Missing or unknown: the highest. An unknown code is skipped, a repeated one counts once.
+        ({}, "high", ()),
+        ({"risk": "none", "risk_why": ["cover", "a_new_reason", "cover"]}, "high", ("cover",)),
+        ({"risk": "LOW", "risk_why": "cover"}, "high", ()),
+        ({"risk": 1, "risk_why": [5, None, {"code": "cover"}, "thermostat"]}, "high", ("thermostat",)),
+        ({"risk": None, "risk_why": None}, "high", ()),
+    ],
+)
+def test_a_risk_reads_as_the_content_format_says(fields: dict, risk: str, why: tuple):
+    """risk and risk_why are optional: a state with any of them is taken, a risk this release does not
+    know counts as high and a reason it does not know is skipped (CONTENT.md)."""
+    entry = {"file": "quirks/z2m_tuya_a.py", "fingerprints": [["_TZE200_aaaa", "TS0601"]], "vendor": "Tuya", "model": "A", "status": "generated", "sha256": "0" * 64, "revision": "0123abcd", **fields}
+    state = content.from_manifest({"tuya_a": entry}, tag="content-3", content=3, homeassistant=None, withdrawn={})
+    assert (content.risk(state.manifest["tuya_a"]), content.risk_why(state.manifest["tuya_a"])) == (risk, why)
+    assert content.high_risk(entry) is (risk == "high")
+    # A verified file counts as checked, whatever its risk.
+    assert content.high_risk({**entry, "status": "verified"}) is False
+
+
+def test_the_content_format_names_the_risks_and_reasons_this_release_knows():
+    spec = re.sub(r"\s+", " ", (ROOT / "CONTENT.md").read_text())
+    assert re.search(r'`risk` \(optional\): `"low"`, `"medium"` or `"high"`', spec)
+    assert content.RISKS == ("low", "medium", "high") and content.HIGH == content.RISKS[-1]
+    codes = re.search(r"`risk_why` \(optional\): the reasons as codes \(([^)]*)\)", spec)[1]
+    assert tuple(codes.split(", ")) == content.RISK_REASONS

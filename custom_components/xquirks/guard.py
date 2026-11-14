@@ -17,7 +17,8 @@ again before the write. A file passes only when each of its statements has one o
   shape (cluster_id, STRUCT_TAGS, the battery range, _CONSTANT_ATTRIBUTES: integers and
   float factors a cluster or a fixed method computes with) and fixed class statements (STRUCT_TARGETS);
 - a QuirkBuilder or TuyaQuirkBuilder chain with the allowed methods (METHODS),
-  with exactly one .filter(no_builtin_quirk), ending in add_to_registry().
+  with exactly one .filter(no_builtin_quirk), ending in add_to_registry(). Its
+  .prevent_default_entity_creation calls take literal keywords only and name a cluster (HIDE).
 
 No class or import takes a name the fixed code binds. Nothing but further chains follows the first
 chain: add_to_registry() ran there, so a name bound below it would be unbound when ZHA calls the
@@ -129,13 +130,21 @@ CLUSTER_MODULES = frozenset(
     f"zigpy.zcl.clusters.{name}"
     for name in ("closures", "general", "greenpower", "homeautomation", "hvac", "lighting", "lightlink", "measurement", "protocol", "security", "smartenergy")
 )
+# The builder method that keeps ZHA from creating its own entities: on a local stand-in cluster ZHA
+# shows settings of the real cluster that never reach the device. Only the keywords of HIDE_KEYWORDS,
+# each a literal of its kind, the cluster always named: no filter function, no cluster type.
+HIDE = "prevent_default_entity_creation"
+HIDE_KEYWORDS = frozenset({"endpoint_id", "cluster_id", "unique_id_suffix"})
+# A unique id suffix as ZHA writes one (pir_o_to_u_delay): letters, digits, "_" and "-".
+SUFFIX = re.compile(r"[A-Za-z0-9_-]{1,64}")
 # The builder methods a chain may call, by builder (every chain also calls the filter).
 _SHARED = ("applies_to", "adds", "binary_sensor", "enum", "filter", "sensor", "switch", "add_to_registry")
 METHODS = {
     "QuirkBuilder": frozenset((*_SHARED, "replaces", "number", "write_attr_button", "command_button", "device_automation_triggers")),
     "TuyaQuirkBuilder": frozenset(
         (
-            *_SHARED, "replaces_endpoint", "skip_configuration", "tuya_attribute", "tuya_binary_sensor", "tuya_cover", "tuya_dp", "tuya_dp_attribute",
+            # HIDE: the Tuya occupancy stand-in hides the PIR delay numbers of the cluster it replaces.
+            *_SHARED, HIDE, "replaces_endpoint", "skip_configuration", "tuya_attribute", "tuya_binary_sensor", "tuya_cover", "tuya_dp", "tuya_dp_attribute",
             "tuya_dp_multi", "tuya_enum", "tuya_illuminance", "tuya_number", "tuya_onoff", "tuya_sensor", "tuya_switch",
             # gen_tuya.STANDARD_NUMERIC
             "tuya_battery", "tuya_co2", "tuya_humidity", "tuya_soil_moisture", "tuya_temperature",
@@ -748,6 +757,8 @@ class QuirkFile:
                 len(call.args) == 1 and not call.keywords and isinstance(call.args[0], ast.Name) and call.args[0].id == FILTER and FILTER in self.functions
             ):
                 raise Refused(call, f"filter other than {FILTER}")
+            if call.func.attr == HIDE:
+                self.hide(call)
         # Upstream first: every chain has the filter that steps back for a shipped quirk.
         if sum(call.func.attr == "filter" for call in calls) != 1:
             raise Refused(root, f"a builder chain without exactly one .filter({FILTER})")
@@ -764,6 +775,28 @@ class QuirkFile:
                 self.aim(call, call.args)
         for call in [root, *calls]:
             self.arguments(call, CHAIN)
+
+    def hide(self, call: ast.Call) -> None:
+        """.prevent_default_entity_creation(endpoint_id=1, cluster_id=..., unique_id_suffix="..."):
+        keywords of HIDE_KEYWORDS only, cluster_id among them. The endpoint is an integer literal from 1
+        to 254, the cluster an integer literal up to 0xFFFF or the cluster_id of a cluster class the
+        file imports or defines, the suffix a string literal SUFFIX allows."""
+        if call.args or any(keyword.arg not in HIDE_KEYWORDS for keyword in call.keywords):
+            raise Refused(call, f"{HIDE} with other arguments than the keywords {', '.join(sorted(HIDE_KEYWORDS))}")
+        values = {keyword.arg: keyword.value for keyword in call.keywords}
+        if "cluster_id" not in values:
+            raise Refused(call, f"{HIDE} without cluster_id")
+        if "endpoint_id" in values and not _int_in(values["endpoint_id"], range(1, 255)):
+            raise Refused(values["endpoint_id"], f"{HIDE} endpoint_id other than an integer from 1 to 254")
+        cluster = values["cluster_id"]
+        named = (isinstance(cluster, ast.Attribute) and cluster.attr == "cluster_id" and isinstance(cluster.value, ast.Name)
+                 and (self.imported.get(cluster.value.id) == CLUSTER or (cluster.value.id in self.classes and cluster.value.id not in self.enums)))
+        if not (named or _int_in(cluster, range(0x10000))):
+            raise Refused(cluster, f"{HIDE} cluster_id other than an integer from 0 to 0xFFFF or a cluster class's cluster_id")
+        if "unique_id_suffix" in values:
+            suffix = values["unique_id_suffix"]
+            if not (isinstance(suffix, ast.Constant) and type(suffix.value) is str and SUFFIX.fullmatch(suffix.value)):
+                raise Refused(suffix, f"{HIDE} unique_id_suffix other than a string of letters, digits, _ and -")
 
     def arguments(self, call: ast.Call, where: str) -> None:
         for arg in call.args:

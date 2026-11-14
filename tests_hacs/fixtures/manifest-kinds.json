@@ -56,7 +56,11 @@
    }
   ],
   "upstream_pr": null,
-  "vendor": "Arteco"
+  "vendor": "Arteco",
+  "risk": "medium",
+  "risk_why": [
+   "alias_differs"
+  ]
  },
  "alias_neo_nas_wv03b": {
   "aliases": [
@@ -201,7 +205,11 @@
    }
   ],
   "upstream_pr": null,
-  "vendor": "NEO"
+  "vendor": "NEO",
+  "risk": "medium",
+  "risk_why": [
+   "alias_differs"
+  ]
  },
  "aqara_c200": {
   "category": "new",
@@ -235,7 +243,11 @@
   },
   "status": "generated",
   "upstream_pr": null,
-  "vendor": "Aqara"
+  "vendor": "Aqara",
+  "risk": "medium",
+  "risk_why": [
+   "number_settings"
+  ]
  },
  "aqara_fp1e": {
   "category": "new",
@@ -413,7 +425,11 @@
    }
   ],
   "upstream_pr": null,
-  "vendor": "Arteco"
+  "vendor": "Arteco",
+  "risk": "medium",
+  "risk_why": [
+   "number_settings"
+  ]
  },
  "avatto_trv26": {
   "category": "new",
@@ -679,7 +695,13 @@
    ]
   },
   "upstream_pr": null,
-  "vendor": "Heiman"
+  "vendor": "Heiman",
+  "risk": "high",
+  "risk_why": [
+   "take_over_drops",
+   "number_settings",
+   "take_over"
+  ]
  },
  "hysyiot_hs206z": {
   "category": "new",
@@ -717,7 +739,11 @@
   },
   "status": "generated",
   "upstream_pr": null,
-  "vendor": "HYSYIOT"
+  "vendor": "HYSYIOT",
+  "risk": "medium",
+  "risk_why": [
+   "number_settings"
+  ]
  },
  "tuya_ts0105": {
   "category": "new",
@@ -760,6 +786,8 @@
   },
   "status": "generated",
   "upstream_pr": null,
-  "vendor": "Tuya"
+  "vendor": "Tuya",
+  "risk": "low",
+  "risk_why": []
  }
 }

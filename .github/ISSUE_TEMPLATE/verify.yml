@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for testing. Run the probe (see CONTRIBUTING.md, "Verifying a device"), tick the values in `probe-report/report.md` that match the device (its display or app, or what it does), then attach `report.md` and `diagnostics.json` below. The probe removes IEEE addresses; check the files for anything else you do not want to share.
+        Thanks for testing. Run the probe (see [CONTRIBUTING.md, "A device test"](https://github.com/jabla/xquirks/blob/main/CONTRIBUTING.md#a-device-test-verified)), tick the values in `probe-report/report.md` that match the device (its display, its app or what it does), then attach `report.md` and `diagnostics.json` below. The probe removes IEEE addresses. Check the files for anything else you do not want to share.
   - type: input
     id: file
     attributes:
@@ -18,7 +18,7 @@ body:
     id: revision
     attributes:
       label: Revision
-      description: The `Revision:` line at the top of the quirk file, or `revision` in the diagnostics of the xquirks integration (Settings > Devices & services > xquirks > Download diagnostics).
+      description: The `Revision:` line at the top of the quirk file or `revision` in the diagnostics of the xquirks integration (Settings > Devices & services > xquirks > three-dot menu > Download diagnostics).
       placeholder: 1a2b3c4d
     validations:
       required: true
