@@ -26271,14 +26271,8 @@
  },
  "sonoff_swv": {
   "category": "new",
-  "claimed_elsewhere": [],
   "description": "Zigbee smart water valve",
-  "endpoints": {
-   "1": [
-    64529
-   ]
-  },
-  "file": "quirks/z2m_sonoff_swv.py",
+  "file": null,
   "fingerprints": [
    [
     null,
@@ -26289,122 +26283,15 @@
     "SWV"
    ]
   ],
-  "left_out": 2,
-  "left_out_gaps": 2,
-  "left_out_lines": [
-   "cyclic_timed_irrigation: z2m's own code, not generated",
-   "cyclic_quantitative_irrigation: z2m's own code, not generated"
-  ],
-  "left_out_unknown": 0,
   "model": "SWV",
-  "over_zha": {
-   "adds": [
-    "Real time irrigation duration",
-    "Real time irrigation volume",
-    "Irrigation start time",
-    "Irrigation end time",
-    "Daily irrigation volume",
-    "Valve work state"
-   ],
-   "zha_only": []
-  },
   "path": "zcl",
   "picture": "SWV.png",
   "picture_sha256": "7339ac3ea547361fc55df7f0ee5c4999a2553ad0372f1604130b41f70e885243",
-  "revision": "a500ee63",
-  "risk": "medium",
-  "risk_why": [
-   "take_over"
-  ],
-  "sha256": "f91127a4b79c6783b55426f069d60e6f7f375b41c049e4fea05611420944262c",
   "sources": {
    "zha-device-handlers": "2.4.1",
    "zigbee-herdsman-converters": "26.130.0"
   },
   "status": "generated",
-  "swap": {
-   "ours": [
-    [
-     64529,
-     20492,
-     "sensor",
-     "-1-water_supply_status",
-     "Water supply"
-    ],
-    [
-     64529,
-     20497,
-     "switch",
-     "-1-auto_close_water_shortage",
-     "Water shortage auto-close"
-    ],
-    [
-     64529,
-     20486,
-     "sensor",
-     "-1-real_time_irrigation_duration",
-     "Real time irrigation duration"
-    ],
-    [
-     64529,
-     20487,
-     "sensor",
-     "-1-real_time_irrigation_volume",
-     "Real time irrigation volume"
-    ],
-    [
-     64529,
-     20493,
-     "sensor",
-     "-1-irrigation_start_time",
-     "Irrigation start time"
-    ],
-    [
-     64529,
-     20494,
-     "sensor",
-     "-1-irrigation_end_time",
-     "Irrigation end time"
-    ],
-    [
-     64529,
-     20495,
-     "sensor",
-     "-1-daily_irrigation_volume",
-     "Daily irrigation volume"
-    ],
-    [
-     64529,
-     20496,
-     "binary_sensor",
-     "-1-valve_work_state",
-     "Valve work state"
-    ]
-   ],
-   "zha": [
-    [
-     64529,
-     20492,
-     "binary_sensor",
-     "-1-water_leak_status",
-     "Water leak"
-    ],
-    [
-     64529,
-     20492,
-     "binary_sensor",
-     "-1-water_supply_status",
-     "Water supply"
-    ],
-    [
-     64529,
-     20497,
-     "switch",
-     "-1-auto_close_water_shortage",
-     "Water shortage auto-close"
-    ]
-   ]
-  },
   "upstream_open_prs": [
    {
     "author": "laity-w-sudo",

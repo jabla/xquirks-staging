@@ -11,3 +11,8 @@
 # file = "z2m_vendor_model.py"
 # revision = "1a2b3c4d"
 # reason = "Reports the temperature ten times too high."
+
+[[withdrawn]]
+file = "z2m_sonoff_swv.py"
+revision = "a500ee63"
+reason = "End-user test of a withdrawal: nothing is wrong with this file, it comes back after the test."
