@@ -93,6 +93,20 @@ export function riskWhy(entry) {
   return [...new Set(codes.filter((code) => typeof code === "string" && Object.hasOwn(RISK_REASONS, code)))];
 }
 
+// What the page shows of an entry's risk: null without a file or for a verified file, else its risk,
+// the badge, the badge's tooltip with the reasons and, for a high risk, the note of its device card.
+export function riskShown(entry) {
+  if (!entry?.file || entry.status === "verified") return null;
+  const tier = risk(entry);
+  const reasons = riskWhy(entry).map((code) => RISK_REASONS[code]);
+  return {
+    tier,
+    badge: `${tier} risk`,
+    title: ["Not verified on a device yet.", ...reasons].join(" "),
+    note: tier === "high" ? ["High risk.", ...reasons, 'The integration offers this file only with "Offer high-risk files" on in its options.'].join(" ") : null,
+  };
+}
+
 // The Home Assistant release a tag's hacs.json names, patch number included; null without one.
 export function homeAssistant(hacs) {
   const release = hacs?.homeassistant;

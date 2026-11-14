@@ -2,7 +2,7 @@
 // with matcher.js against the manifest of the newest content tag (content.js) and links the
 // matching quirk files.
 
-import { LOADING, failure, fileUrl, leftOutLines, loadContent, notReady, pullRequests, treeUrl } from "./content.js";
+import { LOADING, failure, fileUrl, leftOutLines, loadContent, notReady, pullRequests, riskShown, treeUrl } from "./content.js";
 import { TEMPLATE, compareDevices, compareStrings, devicesFromJson, matches } from "./matcher.js";
 
 const REPO = document.documentElement.dataset.repo;
@@ -110,6 +110,18 @@ const STATUS_CLASS = { generated: "badge generated", verified: "badge verified",
 
 function status(entry) {
   return el("span", { class: Object.hasOwn(STATUS_CLASS, entry.status) ? STATUS_CLASS[entry.status] : "badge" }, entry.status);
+}
+
+// The risk of a file that is not verified, next to its status; its reasons in the tooltip.
+function riskBadge(entry) {
+  const shownRisk = riskShown(entry);
+  return shownRisk ? [" ", el("span", { class: `badge risk-${shownRisk.tier}`, title: shownRisk.title }, shownRisk.badge)] : null;
+}
+
+// The device card's note on a high-risk file: why, and that the integration offers it only on request.
+function riskNote(entry) {
+  const note = riskShown(entry)?.note;
+  return note ? el("span", { class: "note" }, note) : null;
 }
 
 // The file's Revision line (the content hash at its top): which content an issue report is about.
@@ -230,6 +242,8 @@ function fileItem(entry, device) {
     revision(entry),
     " ",
     status(entry),
+    riskBadge(entry),
+    riskNote(entry),
     entry.path === "alias" ? el("span", { class: "note" }, `Alias: lets the quirk that ships with ZHA for ${entry.target.join(" / ")} claim this name too.`) : null,
     overZha(entry),
     leftOut(entry),
@@ -405,6 +419,9 @@ const KINDS = {
   all: () => true,
   file: (entry) => Boolean(entry.file),
   verified: (entry) => entry.status === "verified",
+  high: (entry) => riskShown(entry)?.tier === "high",
+  medium: (entry) => riskShown(entry)?.tier === "medium",
+  low: (entry) => riskShown(entry)?.tier === "low",
   prs: (entry) => pullRequests(entry).length > 0,
   nofile: (entry) => !entry.file,
 };
@@ -420,7 +437,7 @@ function row(slug, entry) {
     el("td", { class: "picture-cell", role: "cell" }, picture),
     cell("Device", "device-cell", el("strong", {}, title(entry, slug)), entry.description ? el("span", { class: "what" }, entry.description) : null, pageLink(entry)),
     cell("Fingerprints", "fingerprints", fingerprints, claimed),
-    cell("Status", null, entry.file ? status(entry) : el("span", { class: "badge" }, "no file"), entry.path === "alias" ? el("span", { class: "note" }, "alias") : null,
+    cell("Status", null, entry.file ? [status(entry), riskBadge(entry)] : el("span", { class: "badge" }, "no file"), entry.path === "alias" ? el("span", { class: "note" }, "alias") : null,
       entry.file && entry.over_zha ? el("span", { class: "note" }, "over ZHA's quirk") : null),
     cell("File", "file-cell", entry.file ? [fileLink(entry), " ", revision(entry)] : noFile(entry)),
     cell("Upstream PRs", null, prs.length ? el("span", { class: "prlist" }, prs.map((pr) => el("a", { href: pr.url, title: pr.title }, `#${pr.number}`))) : "none"),

@@ -17,6 +17,12 @@
   --none-fg: #3d434a;
   --problem-bg: #fde3e1;
   --problem-fg: #7a1712;
+  --risk-low-bg: #e1ecf9;
+  --risk-low-fg: #0d3b66;
+  --risk-medium-bg: #fde2c8;
+  --risk-medium-fg: #6b3200;
+  --risk-high-bg: #fbd5d1;
+  --risk-high-fg: #7a1712;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -38,6 +44,12 @@
     --none-fg: #cfd4da;
     --problem-bg: #4d1714;
     --problem-fg: #ffd2cd;
+    --risk-low-bg: #15314f;
+    --risk-low-fg: #bfdbfa;
+    --risk-medium-bg: #4f2b08;
+    --risk-medium-fg: #ffd3a6;
+    --risk-high-bg: #5a1a16;
+    --risk-high-fg: #ffd2cd;
   }
 }
 
@@ -394,6 +406,21 @@ details.more ul {
 .badge.verified {
   color: var(--verified-fg);
   background: var(--verified-bg);
+}
+
+.badge.risk-low {
+  color: var(--risk-low-fg);
+  background: var(--risk-low-bg);
+}
+
+.badge.risk-medium {
+  color: var(--risk-medium-fg);
+  background: var(--risk-medium-bg);
+}
+
+.badge.risk-high {
+  color: var(--risk-high-fg);
+  background: var(--risk-high-bg);
 }
 
 .names {

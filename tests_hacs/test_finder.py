@@ -75,6 +75,7 @@ out.prs = input.prEntries.map((entry) => content.pullRequests(entry));
 out.releases = input.hacs.map((hacs) => content.homeAssistant(hacs));
 out.risks = input.riskEntries.map((entry) => [content.risk(entry), content.riskWhy(entry)]);
 out.riskReasons = content.RISK_REASONS;
+out.riskShown = input.riskShownEntries.map((entry) => content.riskShown(entry));
 out.riskTiers = content.RISKS;
 
 // A stand-in fetch: answers from the scenario's table by URL and records each request.
@@ -187,6 +188,27 @@ RISK_ENTRIES = [
     {},
     None,
 ]
+FILE = "quirks/z2m_acme_ex_1.py"
+NOTE = 'The integration offers this file only with "Offer high-risk files" on in its options.'
+# (entry, what the page shows of its risk: badge, tooltip, device card note), null where it shows none.
+RISK_SHOWN = [
+    ({"file": FILE, "status": "generated", "risk": "low", "risk_why": []}, {"tier": "low", "badge": "low risk", "title": "Not verified on a device yet.", "note": None}),
+    (
+        {"file": FILE, "status": "generated", "risk": "medium", "risk_why": ["number_settings"]},
+        {"tier": "medium", "badge": "medium risk", "title": "Not verified on a device yet. It changes number settings. The device may accept a smaller range.", "note": None},
+    ),
+    (
+        {"file": FILE, "status": "generated", "risk": "high", "risk_why": ["cover", "take_over"]},
+        {"tier": "high", "badge": "high risk", "title": "Not verified on a device yet. It controls a cover. It replaces ZHA's own quirk.",
+         "note": f"High risk. It controls a cover. It replaces ZHA's own quirk. {NOTE}"},
+    ),
+    # Missing: high, no reasons.
+    ({"file": FILE, "status": "generated"}, {"tier": "high", "badge": "high risk", "title": "Not verified on a device yet.", "note": f"High risk. {NOTE}"}),
+    # Verified: only "verified". No file: nothing.
+    ({"file": FILE, "status": "verified", "risk": "high", "risk_why": ["cover"]}, None),
+    ({"file": None, "status": "generated", "risk": "high"}, None),
+    ({"status": "upstream"}, None),
+]
 HACS = [({"homeassistant": "2026.11.0"}, "2026.11.0"), ({"homeassistant": "2026.11"}, None), ({"homeassistant": "2026.11.0b1"}, None), ({"homeassistant": 2026}, None), ({}, None), (None, None), ([], None)]
 # Older or newer than the page reads: the same notice either way.
 UNSUPPORTED = "This page and the device list are out of sync after an update. Reload the page in a while. The xquirks integration is not affected."
@@ -232,6 +254,7 @@ def page():
         "prEntries": [entry for entry, _ in PR_ENTRIES],
         "hacs": [hacs for hacs, _ in HACS],
         "riskEntries": RISK_ENTRIES,
+        "riskShownEntries": [entry for entry, _ in RISK_SHOWN],
         "loads": LOADS,
     }
     result = subprocess.run(args, input=json.dumps(payload), capture_output=True, text=True, timeout=60, check=True)
@@ -405,6 +428,31 @@ def test_risks_read_like_the_integration(page):
     assert page["risks"][2] == ["high", ["cover"]] and page["risks"][4] == ["high", ["thermostat"]]
 
 
+def test_the_page_shows_the_risk_of_files_that_are_not_verified(page):
+    """The badge next to "generated", the reasons in its tooltip, the note of a high-risk file's device
+    card; a verified file shows only "verified"."""
+    assert page["riskShown"] == [shown for _, shown in RISK_SHOWN]
+    for (entry, shown), got in zip(RISK_SHOWN, page["riskShown"], strict=True):
+        if shown:
+            # The same sentences as the integration's change list.
+            assert got["title"] == " ".join(["Not verified on a device yet.", *(text.RISK_REASONS[code] for code in content.risk_why(entry))])
+    app = code(SITE / "app.js")
+    assert "riskBadge(entry)" in app and "riskNote(entry)" in app
+    for tier in content.RISKS:
+        assert f'{tier}: (entry) => riskShown(entry)?.tier === "{tier}",' in app
+
+
+def test_the_page_filters_and_explains_the_risks():
+    options = re.findall(r'<option value="(\w+)">([^<]+)</option>', PAGE)
+    assert [option for option in options if option[0] in content.RISKS] == [("high", "High risk"), ("medium", "Medium risk"), ("low", "Low risk")]
+    assert {value for value, _ in options} <= set(re.findall(r"^  (\w+): \((?:entry)?\) =>", code(SITE / "app.js"), re.M))
+    assert ("<p>Risk: low for readings and simple controls, medium for number settings, high for covers, thermostats, take-overs of ZHA's own quirk and files"
+            " with a known weak spot. Verified files show no risk.</p>") in PAGE
+    style = (SITE / "style.css").read_text()
+    for tier in content.RISKS:
+        assert f".badge.risk-{tier} {{" in style and style.count(f"--risk-{tier}-bg:") == 2
+
+
 def test_the_page_reads_the_content_format_of_this_release(page):
     """content.js reads the format the integration's guard names (FORMAT); two formats only while
     the format changes."""
@@ -420,7 +468,7 @@ def test_app_renders_what_content_js_hands_it():
     assert "loadContent((url, options) => fetch(url, options), REPO)" in app
     assert sorted(set(re.findall(r"\bhref: ([^,}]+?)\s*[,}]", app))) == ["pr.url", "treeUrl(REPO", "url", "url.href"]
     assert sorted(re.findall(r"const url = (.+);", app)) == ["devicePage(entry)", "fileUrl(REPO, state, entry.file)", "new URL(`https://github.com/${REPO}/issues/new`)"]
-    assert not re.search(r"upstream_open_prs|left_out_lines|raw\.githubusercontent|refs/(heads|tags)", app)
+    assert not re.search(r"upstream_open_prs|left_out_lines|risk_why|\.risk\b|raw\.githubusercontent|refs/(heads|tags)", app)
     # The raw base is a constant: no attribute of the page or its address can point it elsewhere.
     assert set(re.findall(r"documentElement\.dataset\.(\w+)", app)) == {"repo"}
     assert not re.search(r"\b(location|URLSearchParams|getAttribute|localStorage|sessionStorage)\b", app)
