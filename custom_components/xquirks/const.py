@@ -19,9 +19,8 @@ STORAGE_VERSION = 1
 REFRESH_COOLDOWN = 10
 
 # A Tuya device that talks through the Tuya MCU cluster sends all its datapoints by itself only when
-# it joins. A data query (a command without payload) makes it send them again. The manifest marks
-# the files for such devices with this path.
-TUYA_PATH = "tuya"
+# it joins. A data query (a command without payload) makes it send them again. The quirk ZHA applies
+# tells such a device: it puts zhaquirks' Tuya MCU cluster on it, which names this command query_data.
 TUYA_CLUSTER = 0xEF00
 TUYA_QUERY_DATA = 0x03
 

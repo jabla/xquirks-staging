@@ -57,7 +57,6 @@ from .const import (
     STORAGE_KEY,
     STORAGE_VERSION,
     TUYA_CLUSTER,
-    TUYA_PATH,
     TUYA_QUERY_DATA,
     ZHA_DOMAIN,
 )
@@ -183,6 +182,16 @@ def _signature(device: Any) -> dict[int, dict[str, Any]] | None:
     return found
 
 
+def tuya_clusters(device: Any) -> list[Any]:
+    """The Tuya MCU clusters (TUYA_CLUSTER) of the zigpy device under a zha Device, by endpoint; none
+    for a device that does not talk through that cluster."""
+    endpoints = getattr(getattr(device, "device", None), "endpoints", None)
+    if not isinstance(endpoints, dict):
+        return []
+    found = (getattr(endpoints[ep_id], "in_clusters", {}).get(TUYA_CLUSTER) for ep_id in sorted(ep for ep in endpoints if isinstance(ep, int) and ep))
+    return [cluster for cluster in found if cluster is not None]
+
+
 def query_cluster(device: Any) -> Any | None:
     """The cluster of a zha Device that a Tuya data query goes to; None when it has none.
 
@@ -190,11 +199,7 @@ def query_cluster(device: Any) -> Any | None:
     names its server command TUYA_QUERY_DATA "query_data" (zhaquirks' Tuya clusters do). The raw
     cluster of a device without a quirk defines no commands.
     """
-    endpoints = getattr(getattr(device, "device", None), "endpoints", None)
-    if not isinstance(endpoints, dict):
-        return None
-    for ep_id in sorted(ep for ep in endpoints if isinstance(ep, int) and ep):
-        cluster = getattr(endpoints[ep_id], "in_clusters", {}).get(TUYA_CLUSTER)
+    for cluster in tuya_clusters(device):
         commands = getattr(cluster, "server_commands", None)
         if isinstance(commands, dict) and getattr(commands.get(TUYA_QUERY_DATA), "name", None) == "query_data":
             return cluster
@@ -1285,22 +1290,24 @@ class QuirkManager:
 
     @callback
     def _query_tuya_devices(self) -> None:
-        """Send one Tuya data query to each device that runs a Tuya file ZHA loaded new or updated.
+        """Send one Tuya data query to each Tuya device that runs a file ZHA loaded new or updated.
 
         Called right after a refresh read what ZHA applies, so self.devices is current. A device is
         asked when ZHA reports that it runs the file, it is not left out (disabled or excluded in the
-        options) and ZHA reports it available. A device on another quirk is never asked. The files
-        are due once: a device that misses the query is not asked again.
+        options), the quirk ZHA applied gives it the Tuya data query and ZHA reports it available. Any
+        kind of file counts, an alias file too: the quirk decides. A device on another quirk is never
+        asked, one without a Tuya MCU cluster is not listed either. The files are due once: a device
+        that misses the query is not asked again.
         """
         if not self._query_due:
             return
         names, self._query_due = self._query_due, set()
-        tuya = {stem(name): name for name in names if (self._entry(name) or {}).get("path") == TUYA_PATH}
+        due = {stem(name): name for name in names}
         excluded = frozenset(self.entry.options.get(CONF_EXCLUDED, ()))
         wanted = {
-            self.ieees[device_id]: (tuya[device.quirk], device)
+            self.ieees[device_id]: (due[device.quirk], device)
             for device_id, device in self.devices.items()
-            if device.quirk in tuya and not device.disabled and device_id not in excluded and device_id in self.ieees
+            if device.quirk in due and not device.disabled and device_id not in excluded and device_id in self.ieees
         }
         if not wanted:
             return
@@ -1312,13 +1319,18 @@ class QuirkManager:
         # What became of each device, per file (the devices by manufacturer and model only: people
         # share diagnostics in public issues).
         stamp = dt_util.utcnow().isoformat(timespec="seconds")
-        results: dict[str, list[str]] = {name: [] for name, _device in wanted.values()}
-        self.queries.update({name: {"time": stamp, "devices": rows} for name, rows in results.items()})
+        results: dict[str, list[str]] = {}
         targets = []
         for ieee, (name, device) in sorted(wanted.items()):
             # The refresh read the quirk of each device in self.devices from these devices just now.
             zha_device = found.get(ieee)
+            if not tuya_clusters(zha_device):
+                # Not a Tuya MCU device: nothing to ask, nothing to list.
+                continue
             label = f"{device.manufacturer} {device.model}"
+            if name not in results:
+                results[name] = []
+                self.queries[name] = {"time": stamp, "devices": results[name]}
             if (cluster := query_cluster(zha_device)) is None:
                 why = "its quirk has no Tuya data query"
             elif not getattr(zha_device, "available", False):

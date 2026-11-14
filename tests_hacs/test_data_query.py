@@ -1,8 +1,8 @@
 """The Tuya data query after ZHA loaded a file the change list installed or updated.
 
 A Tuya device sends its datapoints by itself only when it joins: the settings of a quirk installed
-later stay unknown until the device is asked. Each device that runs the file, is not left out and
-that ZHA reports available gets one query.
+later stay unknown until the device is asked. Each device that runs the file, is not left out, gets
+the data query from the quirk ZHA applied and that ZHA reports available gets one query.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from pytest_homeassistant.common import async_fire_time_changed
 from zigpy.exceptions import DeliveryError
 
 from . import integration
-from .conftest import NO_QUIRK, REPOS, TuyaCluster, Zha, apply_list, continue_fix, issue_of, listed, manager_of, setup_entry, start_fix, write_repo
+from .conftest import MANIFEST, NO_QUIRK, REPOS, TuyaCluster, Zha, apply_list, continue_fix, issue_of, listed, manager_of, setup_entry, start_fix, write_repo
 from .integration import PACKAGE, ROOT, const, diagnostics
 from .test_content import restart_with
 
@@ -98,17 +98,30 @@ async def test_an_update_asks_again_a_removal_does_not(hass: HomeAssistant, zha:
     assert cluster.sent == [QUERY, QUERY]
 
 
-async def test_a_file_for_another_kind_of_device_asks_nothing(hass: HomeAssistant, zha: Zha, repo_dir: Path):
-    """Only a file the manifest marks as Tuya ("path": "tuya") brings a query, even to a device with a
-    Tuya cluster."""
-    zha.tuya[IEEE_B] = cluster = TuyaCluster()
+async def test_a_device_without_a_tuya_cluster_is_neither_asked_nor_listed(hass: HomeAssistant, zha: Zha, repo_dir: Path):
+    """A file for a ZCL device: its quirk puts no Tuya MCU cluster on it, so the diagnostics list nothing for it."""
     zha.add_device(IEEE_B, "Anyone", "B-1")
     await setup_entry(hass, repo_dir)
     assert listed(hass) == {**NOTHING, "install": ["z2m_acme_b.py"]}
     await apply_list(hass)
     zha.reload({IEEE_B: "z2m_acme_b:AcmeB"})
     await settle(hass)
-    assert cluster.sent == [] and queries(hass) == {}
+    assert queries(hass) == {}
+
+
+@pytest.mark.parametrize("path", ["alias", "zcl"])
+async def test_any_file_whose_quirk_has_the_query_asks(hass: HomeAssistant, zha: Zha, repo_dir: Path, path: str):
+    """The quirk decides, not the kind of file: an alias file runs ZHA's own Tuya quirk under more
+    names, and its devices are asked like those of a Tuya file."""
+    alias = {"target": ["_TZE200_zzzz", "TS0601"]} if path == "alias" else {}
+    write_repo(repo_dir, {**MANIFEST, "tuya_a": {**MANIFEST["tuya_a"], "path": path, **alias}})
+    cluster = tuya_device(zha)
+    await setup_entry(hass, repo_dir)
+    await apply_list(hass)
+    zha.reload({IEEE_A: TUYA_A})
+    await settle(hass)
+    assert cluster.sent == [QUERY]
+    assert queries(hass) == {"z2m_tuya_a.py": ["_TZE200_aaaa TS0601: sent"]}
 
 
 @pytest.mark.parametrize("how", ["disabled", "excluded"])
