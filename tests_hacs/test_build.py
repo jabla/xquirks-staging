@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 from .conftest import content_json, tag_files, write_repo
-from .integration import content, guard
+from .integration import const, content, guard
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -141,8 +141,8 @@ def test_hacs_and_integration_metadata():
     for key in ("domain", "name", "version", "documentation", "issue_tracker", "codeowners", "iot_class", "config_flow"):
         assert manifest[key], key
     assert manifest["requirements"] == []
-    # strings.json and translations/en.json are the same text.
-    assert (folder / "strings.json").read_text() == (folder / "translations" / "en.json").read_text()
+    # strings.json and translations/en.json are the same file, byte for byte (read_text would hide line endings).
+    assert (folder / "strings.json").read_bytes() == (folder / "translations" / "en.json").read_bytes()
 
 
 def _strings(tree: dict, prefix: str = "") -> dict[str, str]:
@@ -153,6 +153,20 @@ def _strings(tree: dict, prefix: str = "") -> dict[str, str]:
         else:
             out[prefix + key] = value
     return out
+
+
+def test_every_issue_and_option_the_integration_shows_has_its_texts():
+    """The translation keys the code names: every notice kind the manager creates and every option of
+    the options step, in each language."""
+    folder = load_builder().integration_folder()
+    code = "\n".join(path.read_text() for path in folder.glob("*.py"))
+    kinds = set(re.findall(r'\("(\w+)", (?:True|False), ', code)) | set(re.findall(r'^(?:[A-Z_]+) = "(\w+)"$', (folder / "manager.py").read_text(), re.M)) & {"missing_quirks_path", "folder_unreadable", "no_content_state"}
+    assert {"held_back", "blocked", "changes"} <= kinds
+    options = {const.CONF_EXCLUDED, const.CONF_HIGH_RISK}
+    for path in sorted((folder / "translations").glob("*.json")):
+        strings = json.loads(path.read_text())
+        assert kinds <= set(strings["issues"]), path.name
+        assert set(strings["options"]["step"]["init"]["data"]) == options, path.name
 
 
 def test_every_translation_has_the_keys_and_placeholders_of_en():
