@@ -60,7 +60,7 @@ from .const import (
     TUYA_QUERY_DATA,
     ZHA_DOMAIN,
 )
-from .content import COMMIT, EMPTY, BadContent, ContentState, effective_revision, from_manifest, from_withdrawn_rows, sha256, withdrawn_rows
+from .content import COMMIT, EMPTY, BadContent, ContentState, effective_revision, from_manifest, from_withdrawn_rows, risk, sha256, withdrawn_rows
 from .pictures import Pictures, async_get_pictures
 from .plan import (
     NO_CONTENT,
@@ -1089,7 +1089,7 @@ class QuirkManager:
         """The change list as its dialog shows it (markdown)."""
         plan = self.plan
         summaries = {update.path: await self.async_changes(update.path, update.name) for update in plan.update}
-        return text.change_list(plan, self.devices, self._quirk, self.withdrawn, summaries, self._entry)
+        return text.change_list(plan, self.devices, self._quirk, self.withdrawn, summaries, self._entry, self.data["installed"].get)
 
     async def _change_summaries(self) -> dict[str, Any]:
         """The full entity changes of every update in the list whose offered file was downloaded
@@ -1128,8 +1128,10 @@ class QuirkManager:
 
     def _record(self, name: str, content: bytes) -> dict[str, Any]:
         """The record of a file written from the state in use: with the names of its version (for a
-        version that takes names over from ZHA's own quirk, those names too: plan.names_of)."""
-        return {"sha256": sha256(content), "revision": self.source.revisions[name], "names": names_of(self._entry(name))}
+        version that takes names over from ZHA's own quirk, those names too: plan.names_of), its status
+        and its risk (an update that raises it says so in the change list)."""
+        entry = self._entry(name)
+        return {"sha256": sha256(content), "revision": self.source.revisions[name], "names": names_of(entry), "status": entry.get("status"), "risk": risk(entry)}
 
     async def _read_ours(self, path: str, sha: str) -> bytes:
         """The content of a file of ours while it has the sha256 the plan saw (Changed otherwise)."""

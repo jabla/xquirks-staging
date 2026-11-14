@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from .integration import ROOT, const, content, guard, matching
+from .integration import ROOT, const, content, guard, matching, text
 
 SITE = ROOT / "site"
 NODE = shutil.which("node")
@@ -399,6 +399,8 @@ def test_risks_read_like_the_integration(page):
     and codes as content.py."""
     assert tuple(page["riskTiers"]) == content.RISKS
     assert tuple(page["riskReasons"]) == content.RISK_REASONS
+    # The finder words each reason as the integration's change list does.
+    assert page["riskReasons"] == text.RISK_REASONS
     assert page["risks"] == [[content.risk(entry or {}), list(content.risk_why(entry or {}))] for entry in RISK_ENTRIES]
     assert page["risks"][2] == ["high", ["cover"]] and page["risks"][4] == ["high", ["thermostat"]]
 

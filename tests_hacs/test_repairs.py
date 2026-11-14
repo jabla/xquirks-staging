@@ -105,6 +105,9 @@ async def test_one_list_for_every_change_nothing_written_before_the_confirmation
         "sha256": sha256(quirk_text("tuya_a")),
         "revision": quirk_revision("tuya_a"),
         "names": {"fingerprints": [["_TZE200_aaaa", "TS0601"]], "claimed_elsewhere": []},
+        # The status and risk of the version written: an update that raises the risk says so.
+        "status": "generated",
+        "risk": content.risk(MANIFEST["tuya_a"]),
     }
     assert stored[str(quirks_dir / "z2m_acme_b.py")]["names"] == {"fingerprints": [[None, "B-1"]], "claimed_elsewhere": [["Other", "B-1"]]}
 

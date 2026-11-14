@@ -65,7 +65,8 @@ export function pullRequests(entry) {
 
 // How likely a file is to do something wrong on the device (manifest risk), lowest first.
 export const RISKS = ["low", "medium", "high"];
-// The reasons for a risk (manifest risk_why) by code, one sentence each.
+// The reasons for a risk (manifest risk_why) by code, as the integration words them in its change
+// list (custom_components/xquirks/text.py RISK_REASONS).
 export const RISK_REASONS = Object.freeze({
   cover: "It controls a cover.",
   thermostat: "It controls a thermostat.",

@@ -13,6 +13,7 @@ from urllib.parse import quote, urlencode
 from . import plan as plans
 from .changes import LIMIT, Summary, plain
 from .const import REPOSITORY
+from .content import HIGH, RISKS, risk, risk_why, verified
 from .plan import Device, Lost, Misfit, Plan
 
 UPSTREAM_PR = "https://github.com/zigpy/zha-device-handlers/pull/{number}"
@@ -34,6 +35,23 @@ STATUS = {
     "verified": "verified on a device",
 }
 
+# The reasons for a risk (content.RISK_REASONS), as the change list and the notices say them. The
+# finder says the same (site/content.js RISK_REASONS).
+RISK_REASONS = {
+    "cover": "It controls a cover.",
+    "thermostat": "It controls a thermostat.",
+    "state_dependency": "One of its settings changes how another value reads.",
+    "mixed_manufacturer_code": "It writes a setting with a manufacturer code the rest of its cluster does not use.",
+    "take_over_drops": "It replaces ZHA's own quirk and leaves out features that quirk shows.",
+    "defect_found": "A device test found a fault. Its fix is not verified yet.",
+    "number_settings": "It changes number settings. The device may accept a smaller range.",
+    "local_occupancy": "ZHA shows delay settings for it that never reach the device.",
+    "take_over": "It replaces ZHA's own quirk.",
+    "alias_differs": "ZHA's quirk reads one of its values differently.",
+}
+# What the change list compares when an update changes a file's risk: verified first, then the risks.
+TIERS = ("verified", *RISKS)
+
 # Why a file of ours goes.
 REMOVALS = {
     plans.MOVED: "another xquirks file is for one of its devices",
@@ -47,6 +65,25 @@ REMOVALS = {
 
 def status(entry: dict) -> str:
     return STATUS.get(entry["status"], "unknown")
+
+
+def reasons(entry: dict) -> str:
+    """The reasons for an entry's risk as sentences; empty without one this release knows."""
+    return " ".join(RISK_REASONS[code] for code in risk_why(entry))
+
+
+def tier(entry: dict) -> str:
+    """How the change list ranks a file (TIERS): verified, else its risk. Also of a record, which keeps
+    the status and risk of the version written."""
+    return "verified" if verified(entry) else risk(entry)
+
+
+def risk_sentence(entry: dict) -> str:
+    """The risk of a file that is not verified, with its reasons; empty for a verified one."""
+    if verified(entry):
+        return ""
+    found = risk(entry)
+    return " ".join(part for part in (f"Risk: {found}.", reasons(entry), "Test it before you rely on it." if found == HIGH else "") if part)
 
 
 def label(entry: dict | None, name: str) -> str:
@@ -213,6 +250,14 @@ def _pull_requests(entry: dict | None) -> list[str]:
     return []
 
 
+def _risk_raised(entry: dict | None, record: dict | None) -> list[str]:
+    """For an update whose offered version ranks higher than the version written (its record): its
+    risk now, with the reasons. Nothing for a record that does not say: it counts as high."""
+    if not entry or not record or TIERS.index(tier(entry)) <= TIERS.index(tier(record)):
+        return []
+    return [" ".join(part for part in (f"    - risk now {tier(entry)}.", reasons(entry)) if part)]
+
+
 def change_list(
     plan: Plan,
     devices: dict[str, Device],
@@ -220,8 +265,10 @@ def change_list(
     withdrawn: Mapping[tuple[str, str], str],
     summaries: Mapping[str, Summary | None],
     entry: Callable[[str], dict | None] = lambda name: None,
+    record: Callable[[str], dict | None] = lambda path: None,
 ) -> str:
-    """The change list for its dialog: one bullet per change, with its devices and why."""
+    """The change list for its dialog: one bullet per change, with its devices and why (entry: the
+    manifest entry of a file name, record: the record of an installed file's path)."""
     lines = []
     for removal in plan.remove:
         if removal.withdrawn and removal.reason != plans.OUTSIDE:
@@ -235,6 +282,7 @@ def change_list(
         if update.withdrawn:
             line += f" The installed revision {update.revision} is withdrawn: {plain(withdrawn.get((update.name, update.revision), ''))}"
         lines.append(line)
+        lines += _risk_raised(entry(update.name), record(update.path))
         if summary := summaries.get(update.path):
             items = summary.items()
             lines += [f"    - {item}" for item in items[:LIMIT]]
@@ -244,7 +292,7 @@ def change_list(
         lines += _taken_over(update.took_over, entry(update.name), devices, update.new_ids)
     for install in plan.install:
         found = entry(install.name)
-        known = f" Status: {status(found)}." if found else ""
+        known = " ".join(part for part in (f" Status: {status(found)}.", risk_sentence(found)) if part) if found else ""
         lines.append(f"- **Install** `{install.name}` ({plain(label(install.name))}) for {_names(install.devices, devices)}.{known}")
         lines += _taken_over(install.took_over, found, devices, install.new_ids) + _left_out(install.left_out, devices) + _pull_requests(found)
     return "\n".join(lines)
