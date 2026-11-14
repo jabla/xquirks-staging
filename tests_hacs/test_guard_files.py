@@ -80,7 +80,7 @@ PAYLOADS = {
                                                      "from zhaquirks.tuya.builder import TuyaQuirkBuilder\nfrom zhaquirks.tuya import TuyaLocalCluster\n"),
     "import of a lowercase name from a cluster module": (TUYA, "import functools\n", "import functools\nfrom zigpy.zcl.clusters.general import foundation\n"),
     "import from another zigpy module": (TUYA, "import functools\n", "import functools\nfrom zigpy.zcl.clusters.manufacturer_specific import ManufacturerSpecificCluster\n"),
-    "builder method no quirk file calls": (TUYA, CHAIN_END, "    .prevent_default_entity_creation(endpoint_id=1)\n" + CHAIN_END),
+    "builder method no quirk file calls": (TUYA, CHAIN_END, "    .friendly_name(model='Other', manufacturer='Someone')\n" + CHAIN_END),
     "tuya method on QuirkBuilder": (ZCL, CHAIN_END, "    .tuya_dp(dp_id=1)\n" + CHAIN_END),
     "another filter": (TUYA, ".filter(no_builtin_quirk)", ".filter(lambda device: True)"),
     "add_to_registry with an argument": (TUYA, ".add_to_registry()", ".add_to_registry(1)"),
@@ -180,6 +180,83 @@ PAYLOADS = {
     "coding declaration after a byte order mark": (TUYA, '"""Tuya TS0105', '\ufeff# coding: utf-8\n"""Tuya TS0105'),
     "coding declaration on the second line": (TUYA, '"""Tuya TS0105', '#!/usr/bin/env python3\n# vim: set fileencoding=latin-1 :\n"""Tuya TS0105'),
 }
+
+
+# .prevent_default_entity_creation: literal keywords of their kind only, the cluster always named.
+HIDE_CALL = "    .prevent_default_entity_creation({})\n"
+HIDE_PASSES = {
+    "a ZCL default entity of a stand-in cluster": (TUYA, "endpoint_id=1, cluster_id=0x0406, unique_id_suffix='pir_o_to_u_delay'"),
+    "the cluster of an imported stand-in": (METER, "endpoint_id=1, cluster_id=TuyaMCUCluster.cluster_id, unique_id_suffix='pir_u_to_o_delay'"),
+    "the cluster of a class of the file on QuirkBuilder": (ZCL, "endpoint_id=1, cluster_id=BoschWaterAlarmCluster.cluster_id"),
+    "a cluster on every endpoint": (TUYA, "cluster_id=0x0406"),
+    "a suffix with an endpoint and a cluster in it": (TUYA, "cluster_id=0x0402, unique_id_suffix='1-1794'"),
+}
+HIDE_REFUSED = {
+    "no arguments": (TUYA, ""),
+    "no cluster": (TUYA, "endpoint_id=1"),
+    "only a suffix": (TUYA, "unique_id_suffix='pir_o_to_u_delay'"),
+    "a positional argument": (TUYA, "1, cluster_id=0x0406"),
+    "a filter function": (TUYA, "cluster_id=0x0406, function=lambda entity: True"),
+    "the upstream filter as a function": (TUYA, "cluster_id=0x0406, function=no_builtin_quirk"),
+    "a cluster type": (TUYA, "cluster_id=0x0406, cluster_type=1"),
+    "spread keywords": (TUYA, "cluster_id=0x0406, **{'endpoint_id': 1}"),
+    "endpoint zero": (TUYA, "endpoint_id=0, cluster_id=0x0406"),
+    "endpoint 255": (TUYA, "endpoint_id=255, cluster_id=0x0406"),
+    "endpoint as text": (TUYA, "endpoint_id='1', cluster_id=0x0406"),
+    "endpoint as a bool": (TUYA, "endpoint_id=True, cluster_id=0x0406"),
+    "endpoint computed": (TUYA, "endpoint_id=0 | 1, cluster_id=0x0406"),
+    "cluster as text": (TUYA, "cluster_id='0x0406'"),
+    "cluster out of range": (TUYA, "cluster_id=0x10000"),
+    "negative cluster": (TUYA, "cluster_id=-1"),
+    "cluster as a float": (TUYA, "cluster_id=1030.0"),
+    "cluster of an enum of the file": (METER, "cluster_id=OnlineState.cluster_id"),
+    "cluster of a builder": (METER, "cluster_id=TuyaQuirkBuilder.cluster_id"),
+    "cluster of a module": (METER, "cluster_id=zhaquirks.cluster_id"),
+    "another attribute of a cluster": (METER, "cluster_id=TuyaMCUCluster.ep_attribute"),
+    "a cluster class itself": (METER, "cluster_id=TuyaMCUCluster"),
+    "a value of the file": (METER, "cluster_id=TUYA_CLUSTER_ID"),
+    "suffix as a number": (TUYA, "cluster_id=0x0406, unique_id_suffix=1794"),
+    "empty suffix": (TUYA, "cluster_id=0x0406, unique_id_suffix=''"),
+    "suffix with a space": (TUYA, "cluster_id=0x0406, unique_id_suffix='pir delay'"),
+    "suffix with a dot": (TUYA, "cluster_id=0x0406, unique_id_suffix='../x'"),
+    "suffix too long": (TUYA, f"cluster_id=0x0406, unique_id_suffix='{'a' * 65}'"),
+    "suffix as bytes": (TUYA, "cluster_id=0x0406, unique_id_suffix=b'pir'"),
+    "suffix as an f-string": (TUYA, "cluster_id=0x0406, unique_id_suffix=f'pir{1}'"),
+    "suffix computed": (TUYA, "cluster_id=0x0406, unique_id_suffix='pir' + '_delay'"),
+}
+
+
+@pytest.mark.parametrize(("name", "arguments"), HIDE_PASSES.values(), ids=HIDE_PASSES)
+def test_integration_guard_passes_hiding_default_entities(name, arguments):
+    text = frozen(name).replace(CHAIN_END, HIDE_CALL.format(arguments) + CHAIN_END, 1)
+    assert SHIPPED.problems(text.encode(), targets(name)) == ()
+
+
+@pytest.mark.parametrize(("name", "arguments"), HIDE_REFUSED.values(), ids=HIDE_REFUSED)
+def test_integration_guard_refuses_other_ways_of_hiding_entities(name, arguments):
+    text = frozen(name)
+    assert SHIPPED.problems(text.encode(), targets(name)) == ()
+    problems = SHIPPED.problems(text.replace(CHAIN_END, HIDE_CALL.format(arguments) + CHAIN_END, 1).encode(), targets(name))
+    assert problems and any(guard.HIDE in problem or "** in a call" in problem for problem in problems), problems
+
+
+def test_hiding_takes_the_keywords_of_both_builders():
+    """The pinned zha-quirks: both builders have the method, with each keyword the guard allows as a
+    keyword-only parameter that takes the kind the guard checks for."""
+    import inspect
+
+    from zhaquirks.builder import QuirkBuilder
+    from zhaquirks.tuya.builder import TuyaQuirkBuilder
+
+    assert guard.HIDE in guard.METHODS["QuirkBuilder"] and guard.HIDE in guard.METHODS["TuyaQuirkBuilder"]
+    for builder in (QuirkBuilder, TuyaQuirkBuilder):
+        parameters = inspect.signature(getattr(builder, guard.HIDE)).parameters
+        assert all(parameters[name].kind is inspect.Parameter.KEYWORD_ONLY for name in guard.HIDE_KEYWORDS)
+        assert {name: parameters[name].annotation for name in guard.HIDE_KEYWORDS} == {"endpoint_id": "int | None", "cluster_id": "int | None", "unique_id_suffix": "str | None"}
+    # What the call leaves in the quirk: a filter of exactly these values, ZHA hides the entities it matches.
+    built = TuyaQuirkBuilder("_TZE200_aaaa", "TS0601").prevent_default_entity_creation(endpoint_id=1, cluster_id=0x0406, unique_id_suffix="pir_o_to_u_delay")
+    (entity_filter,) = built.disabled_default_entities
+    assert (entity_filter.endpoint_id, entity_filter.cluster_id, entity_filter.unique_id_suffix, entity_filter.function, entity_filter.cluster_type) == (1, 0x0406, "pir_o_to_u_delay", None, None)
 
 
 @pytest.mark.parametrize(("name", "old", "new"), PAYLOADS.values(), ids=PAYLOADS)
