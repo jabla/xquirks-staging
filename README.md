@@ -59,6 +59,10 @@ Settings > System > Repairs. **Apply all** makes all changes at once, then reloa
 Zigbee devices are unavailable for a few seconds. If a step fails, it puts back what it changed.
 **Not now** puts the list aside (Repairs > three-dot menu > Show ignored repairs).
 
+After ZHA reloads, the integration asks each Tuya device that got a new or updated file for its
+current values: these devices send them by themselves only when they join. A battery device may miss
+the request and show its settings only when it next reports.
+
 To keep a device out, add it under Settings > Devices & services > xquirks > Configure. A file
 another device needs is installed anyway. The integration never writes or deletes a file it did not
 write, a file you changed or a symlink. Its notices say what happened and what to do. "Quirk file
