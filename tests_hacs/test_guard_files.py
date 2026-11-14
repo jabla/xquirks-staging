@@ -187,11 +187,12 @@ HIDE_CALL = "    .prevent_default_entity_creation({})\n"
 HIDE_PASSES = {
     "a ZCL default entity of a stand-in cluster": (TUYA, "endpoint_id=1, cluster_id=0x0406, unique_id_suffix='pir_o_to_u_delay'"),
     "the cluster of an imported stand-in": (METER, "endpoint_id=1, cluster_id=TuyaMCUCluster.cluster_id, unique_id_suffix='pir_u_to_o_delay'"),
-    "the cluster of a class of the file on QuirkBuilder": (ZCL, "endpoint_id=1, cluster_id=BoschWaterAlarmCluster.cluster_id"),
     "a cluster on every endpoint": (TUYA, "cluster_id=0x0406"),
     "a suffix with an endpoint and a cluster in it": (TUYA, "cluster_id=0x0402, unique_id_suffix='1-1794'"),
 }
 HIDE_REFUSED = {
+    # No ZCL file needs it: only the Tuya builder may call it.
+    "on QuirkBuilder": (ZCL, "endpoint_id=1, cluster_id=BoschWaterAlarmCluster.cluster_id"),
     "no arguments": (TUYA, ""),
     "no cluster": (TUYA, "endpoint_id=1"),
     "only a suffix": (TUYA, "unique_id_suffix='pir_o_to_u_delay'"),
@@ -241,14 +242,14 @@ def test_integration_guard_refuses_other_ways_of_hiding_entities(name, arguments
 
 
 def test_hiding_takes_the_keywords_of_both_builders():
-    """The pinned zha-quirks: both builders have the method, with each keyword the guard allows as a
+    """The pinned zha-quirks: both builders have the method (the guard allows it on the Tuya one), with each keyword the guard allows as a
     keyword-only parameter that takes the kind the guard checks for."""
     import inspect
 
     from zhaquirks.builder import QuirkBuilder
     from zhaquirks.tuya.builder import TuyaQuirkBuilder
 
-    assert guard.HIDE in guard.METHODS["QuirkBuilder"] and guard.HIDE in guard.METHODS["TuyaQuirkBuilder"]
+    assert guard.HIDE in guard.METHODS["TuyaQuirkBuilder"] and guard.HIDE not in guard.METHODS["QuirkBuilder"]
     for builder in (QuirkBuilder, TuyaQuirkBuilder):
         parameters = inspect.signature(getattr(builder, guard.HIDE)).parameters
         assert all(parameters[name].kind is inspect.Parameter.KEYWORD_ONLY for name in guard.HIDE_KEYWORDS)

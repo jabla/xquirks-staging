@@ -138,12 +138,13 @@ HIDE_KEYWORDS = frozenset({"endpoint_id", "cluster_id", "unique_id_suffix"})
 # A unique id suffix as ZHA writes one (pir_o_to_u_delay): letters, digits, "_" and "-".
 SUFFIX = re.compile(r"[A-Za-z0-9_-]{1,64}")
 # The builder methods a chain may call, by builder (every chain also calls the filter).
-_SHARED = ("applies_to", "adds", "binary_sensor", "enum", "filter", "sensor", "switch", "add_to_registry", HIDE)
+_SHARED = ("applies_to", "adds", "binary_sensor", "enum", "filter", "sensor", "switch", "add_to_registry")
 METHODS = {
     "QuirkBuilder": frozenset((*_SHARED, "replaces", "number", "write_attr_button", "command_button", "device_automation_triggers")),
     "TuyaQuirkBuilder": frozenset(
         (
-            *_SHARED, "replaces_endpoint", "skip_configuration", "tuya_attribute", "tuya_binary_sensor", "tuya_cover", "tuya_dp", "tuya_dp_attribute",
+            # HIDE: the Tuya occupancy stand-in hides the PIR delay numbers of the cluster it replaces.
+            *_SHARED, HIDE, "replaces_endpoint", "skip_configuration", "tuya_attribute", "tuya_binary_sensor", "tuya_cover", "tuya_dp", "tuya_dp_attribute",
             "tuya_dp_multi", "tuya_enum", "tuya_illuminance", "tuya_number", "tuya_onoff", "tuya_sensor", "tuya_switch",
             # gen_tuya.STANDARD_NUMERIC
             "tuya_battery", "tuya_co2", "tuya_humidity", "tuya_soil_moisture", "tuya_temperature",
